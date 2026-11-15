@@ -1,6 +1,7 @@
 extends Control
 const Data = preload("res://scripts/content.gd")
 const EntryPages = preload("res://scripts/entry_pages.gd")
+const QuestionPages = preload("res://scripts/question_pages.gd")
 const TEAL = Color("103e49")
 const CREAM = Color("fff0ce")
 const GOLD = Color("e7bd73")
@@ -111,6 +112,9 @@ func render() -> void:
  if page in ["home", "instructions"]:
   EntryPages.build(self, page)
   return
+ if page == "quiz":
+  build_question()
+  return
  var back=ColorRect.new()
  back.color=Color("082e38")
  back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -166,51 +170,7 @@ func build_instructions() -> void:
  root_box.add_child(button("返回首頁",func(): page="home"; render()))
 
 func build_question() -> void:
- title("第 %d / 5 步 · %s" % [question+1,Data.LABELS[question]],"提交前可隨時返回修改。")
- var dots=HBoxContainer.new()
- dots.add_theme_constant_override("separation",8)
- root_box.add_child(dots)
- for i in range(5):
-  var dot=ColorRect.new()
-  dot.custom_minimum_size.y=5
-  dot.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  dot.color=GOLD if i==question else Color("41656b") if answers[i]>=0 else Color("173f48")
-  dots.add_child(dot)
- root_box.add_child(gap(12))
- root_box.add_child(label(Data.QUESTIONS[question],25 if compact else 30))
- root_box.add_child(gap(8))
- for display_i in range(3):
-  var value: int=orders[question][display_i]
-  var chosen: bool=answers[question]==value
-  var row=button("",func(): choose(value),chosen)
-  row.add_theme_stylebox_override("hover",panel_style(Color("efd097") if chosen else Color("235966"),GOLD,12))
-  row.custom_minimum_size.y=94 if compact else 88
-  row.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  var margin=MarginContainer.new()
-  margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  margin.add_theme_constant_override("margin_left",18)
-  margin.add_theme_constant_override("margin_right",18)
-  margin.add_theme_constant_override("margin_top",12)
-  margin.add_theme_constant_override("margin_bottom",12)
-  margin.mouse_filter=Control.MOUSE_FILTER_IGNORE
-  row.add_child(margin)
-  var text_node=label(("●  " if chosen else "○  ")+Data.OPTIONS[question][value],20,TEAL if chosen else CREAM)
-  margin.add_child(text_node)
-  root_box.add_child(row)
- root_box.add_child(gap(8))
- var nav=HBoxContainer.new()
- nav.add_theme_constant_override("separation",12)
- root_box.add_child(nav)
- var prev=button("上一步",func(): question-=1; render())
- prev.disabled=question==0
- prev.size_flags_horizontal=Control.SIZE_EXPAND_FILL
- nav.add_child(prev)
- var next=button("完成並揭曉" if question==4 else "下一步  →",next_question,true)
- next.name="NextButton"
- next.size_flags_horizontal=Control.SIZE_EXPAND_FILL
- next.disabled=answers[question]<0
- nav.add_child(next)
- root_box.add_child(label("答案會在五題全部完成後揭曉。",16,MUTED))
+ QuestionPages.build(self)
 
 func choose(value: int) -> void:
  if page!="quiz" or submitted or value<0 or value>2:return
