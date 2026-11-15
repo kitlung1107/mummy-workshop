@@ -1,5 +1,6 @@
 extends Control
 const Data = preload("res://scripts/content.gd")
+const EntryPages = preload("res://scripts/entry_pages.gd")
 const TEAL = Color("103e49")
 const CREAM = Color("fff0ce")
 const GOLD = Color("e7bd73")
@@ -107,6 +108,9 @@ func clear_screen() -> void:
 func render() -> void:
  clear_screen()
  compact=size.x<640
+ if page in ["home", "instructions"]:
+  EntryPages.build(self, page)
+  return
  var back=ColorRect.new()
  back.color=Color("082e38")
  back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
