@@ -32,10 +32,10 @@ static func _illustrated(game: Control, page: String) -> void:
  art.mouse_filter = Control.MOUSE_FILTER_IGNORE
  frame.add_child(art)
  if page == "home":
-  _hotspot(frame, "StartGame", "開始遊戲", Rect2(0.263,0.816,0.473,0.144),
+  _hotspot(frame, "StartGame", "", Rect2(0.263,0.816,0.473,0.144),
    func(): game.new_attempt(); game.render())
  else:
-  _hotspot(frame, "AcceptMission", "接受任務", Rect2(0.326,0.86,0.422,0.121),
+  _hotspot(frame, "AcceptMission", "", Rect2(0.326,0.86,0.422,0.121),
    func(): game.page="quiz"; game.render())
   _hotspot(frame, "BackHome", "返回首頁", Rect2(0.018,0.018,0.072,0.084),
    func(): game.page="home"; game.render())
