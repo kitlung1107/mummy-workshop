@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="84" viewBox="0 0 240 84">
+<defs>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffdf8b"/><stop offset=".48" stop-color="#ae6e24"/><stop offset="1" stop-color="#e8b85b"/></linearGradient>
+ <linearGradient id="papyrus" x2="0" y2="1"><stop stop-color="#fbe7b5"/><stop offset=".5" stop-color="#efd49b"/><stop offset="1" stop-color="#d6ad6b"/></linearGradient>
+ <pattern id="fibers" width="19" height="13" patternUnits="userSpaceOnUse"><path d="M0 3h19M4 10h10" stroke="#9a6426" stroke-opacity=".09" stroke-width=".6"/></pattern>
+</defs>
+<rect x="2" y="5" width="236" height="77" rx="37" fill="#312315" fill-opacity=".55"/>
+<rect x="2" y="1" width="236" height="78" rx="38" fill="url(#gold)" stroke="#5c3517" stroke-width="3"/>
+<rect x="8" y="7" width="224" height="66" rx="32" fill="url(#papyrus)" stroke="#fff0b7" stroke-width="1.7"/>
+<rect x="12" y="11" width="216" height="58" rx="28" fill="url(#fibers)" stroke="#99652b" stroke-width="1.2"/>
+<path d="M29 20Q13 40 29 60M211 20Q227 40 211 60" fill="none" stroke="#9b6b2d" stroke-width="2"/>
+<path d="M35 15h170M35 65h170" fill="none" stroke="#fff1c1" stroke-opacity=".65"/>
+</svg>

@@ -1,7 +1,7 @@
 extends Control
 const Data=preload("res://scripts/content.gd")
 const SHEET=preload("res://assets/composite/sprites.png")
-const EFFECT=preload("res://scripts/body_effects.gdshader")
+const EFFECT=preload("res://scripts/refined_material.gdshader")
 var answers:Array=[]
 var rules:Dictionary={}
 var body:Control
@@ -10,6 +10,7 @@ var clock:float=0.0
 var animated=true
 var effects:Control
 var anchors:Array[Vector2]=[]
+var vapors:Array[ShaderMaterial]=[]
 
 static func sprite(region:Rect2)->AtlasTexture:
  var atlas=AtlasTexture.new()
@@ -60,52 +61,52 @@ func configure(selected:Array)->void:
   support.add_theme_stylebox_override("panel",style)
   body.add_child(support)
  body_art=art(body,"Papyrus" if rules.material=="papyrus" else "Linen",Rect2(824 if rules.material=="papyrus" else 440,48,276,936),Rect2(0,0,208,660))
+ var material_name="papyrus" if rules.material=="papyrus" else "linen"
+ var state=["dry","water","beer"][answers[2]]
+ var asset_path="res://assets/refined/"+material_name+"-"+state+".png"
+ if rules.hollow:
+  asset_path="res://assets/refined/linen-unfilled-"+state+"-v3.png"
+ elif answers[2]>0:
+  asset_path="res://assets/refined/"+material_name+"-filled-"+state+"-v3.png"
+ body_art.texture=load(asset_path)
+ body_art.set_meta("material_asset",asset_path)
  var material_new=ShaderMaterial.new()
  material_new.shader=EFFECT
  material_new.set_shader_parameter("hollow",rules.hollow)
  material_new.set_shader_parameter("full_belly",rules.belly_full)
  material_new.set_shader_parameter("damaged_head",rules.head_notch)
  material_new.set_shader_parameter("organ_stain",rules.organ_stain)
+ material_new.set_shader_parameter("head_decay",rules.head_odor)
+ material_new.set_shader_parameter("papyrus",rules.material=="papyrus")
  material_new.set_shader_parameter("wet",answers[2])
- material_new.set_shader_parameter("uv_origin",Vector2(824.0 if rules.material=="papyrus" else 440.0,48.0)/Vector2(1536.0,1024.0))
- material_new.set_shader_parameter("uv_extent",Vector2(276.0,936.0)/Vector2(1536.0,1024.0))
  body_art.material=material_new
+ if rules.head_notch:
+  var torn=TextureRect.new();torn.name="TornTempleWrap"
+  torn.texture=load("res://assets/refined/torn-wrap.png")
+  torn.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+  torn.stretch_mode=TextureRect.STRETCH_SCALE
+  torn.position=Vector2(153,-9) if rules.mask else Vector2(134,-6)
+  torn.size=Vector2(57,77) if rules.mask else Vector2(46,64)
+  torn.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  if rules.material=="papyrus":torn.modulate=Color("d8b271")
+  body.add_child(torn)
  if rules.mask:
   art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(32,-6,144,134))
- effects=Control.new();effects.name="VisibleEffects";effects.mouse_filter=Control.MOUSE_FILTER_IGNORE;effects.size=size;add_child(effects);effects.draw.connect(_draw_effects)
- anchors=[body.position+Vector2(102,65),body.position+Vector2(112,240),body.position+Vector2(118,355),body.position+Vector2(114,620),coffin_rect.position+Vector2(coffin_rect.size.x*.73,coffin_rect.size.y*.78)]
+ effects=Control.new();effects.name="Atmosphere";effects.mouse_filter=Control.MOUSE_FILTER_IGNORE;effects.size=size;body.add_child(effects)
+ # User review: no external odor waves, haze or plumes.
+ anchors=[body.position+Vector2(102,65),body.position+Vector2(112,240),body.position+Vector2(118,355),body.position+Vector2(114,620),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
  if is_instance_valid(effects):effects.queue_redraw()
+
+func add_vapor(rect:Rect2,strength:float)->void:
+ var cloud=ColorRect.new()
+ cloud.name="SeamVapor%d"%vapors.size()
+ cloud.position=rect.position;cloud.size=rect.size
+ cloud.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ var mat=ShaderMaterial.new();mat.shader=load("res://scripts/atmosphere.gdshader")
+ mat.set_shader_parameter("strength",strength)
+ cloud.material=mat;effects.add_child(cloud);vapors.append(mat)
 
 func _process(delta:float)->void:
  if animated:clock+=delta
- if is_instance_valid(effects):effects.queue_redraw()
-
-func _draw_effects()->void:
- if rules.is_empty():return
- var offset=body.position
- if rules.head_odor:odor(offset+Vector2(171,57),1.0)
- if rules.organ_stain:odor(offset+Vector2(179,250),1.2 if rules.wet else 1.0)
- if rules.wet:
-  for i in range(9):
-   var p=offset+Vector2(48+(i*41)%127,203+(i*73)%423)
-   p.y+=sin(clock*1.7+i)*3.0
-   var tint=Color("dfa03f") if rules.beer else Color("64c4e6")
-   effects.draw_colored_polygon(PackedVector2Array([p+Vector2(0,-10),p+Vector2(-5,1),p+Vector2(-4,6),p+Vector2(4,6),p+Vector2(5,1)]),tint)
-   effects.draw_circle(p+Vector2(-1,2),1.5,Color("e9ffff"))
-   if rules.beer:
-    for j in range(3):effects.draw_circle(p+Vector2(j*5-5,-10-j%2*4),3.0,Color("fbe5b3"))
- if rules.head_notch:
-  var p=offset+(Vector2(176,22) if rules.mask else Vector2(141,30))
-  # A visible torn wrapping edge behind the mask, never an exposed wound.
-  effects.draw_polyline(PackedVector2Array([p+Vector2(-9,-10),p+Vector2(-4,3),p+Vector2(4,-3),p+Vector2(7,12),p+Vector2(15,7)]),Color("543329"),5.0,true)
-  effects.draw_polyline(PackedVector2Array([p+Vector2(-8,-12),p+Vector2(-1,0),p+Vector2(5,-6),p+Vector2(10,8)]),Color("ffe7bd"),2.0,true)
-
-func odor(origin:Vector2,strength:float)->void:
- for strand in range(3):
-  var points=PackedVector2Array()
-  for j in range(18):
-   var t=float(j)/17.0
-   points.append(origin+Vector2(strand*13+sin(t*8.0+clock*1.5+strand)*9.0,-t*70*strength))
-  effects.draw_polyline(points,Color(.21,.03,.31,.55),9.0,true)
-  effects.draw_polyline(points,Color("c75cff"),4.5,true)
-  effects.draw_circle(points[-1],3,Color("e1a4ff"))
+ if is_instance_valid(body_art):body_art.material.set_shader_parameter("phase",clock)
+ for i in range(vapors.size()):vapors[i].set_shader_parameter("phase",clock+float(i)*4.7)

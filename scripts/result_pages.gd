@@ -41,6 +41,26 @@ static func put_button(game:Control,parent:Control,id:String,text:String,rect:Re
  parent.add_child(button)
  return button
 
+static func egyptian_button(button:Button,font_size:int=32)->void:
+ var parchment=load("res://assets/refined/label-cartouche.svg") as Texture2D
+ for state in ["normal","hover","pressed","disabled"]:
+  var style=StyleBoxTexture.new()
+  style.texture=parchment
+  style.content_margin_left=24;style.content_margin_right=24
+  style.content_margin_top=8;style.content_margin_bottom=10
+  button.add_theme_stylebox_override(state,style)
+ var focus=StyleBoxFlat.new()
+ focus.bg_color=Color.TRANSPARENT;focus.border_color=Color("fff1bd")
+ focus.set_border_width_all(2);focus.set_corner_radius_all(38)
+ button.add_theme_stylebox_override("focus",focus)
+ button.add_theme_font_size_override("font_size",font_size)
+ button.add_theme_color_override("font_color",Color("53331d"))
+ button.add_theme_color_override("font_hover_color",Color("26190f"))
+ button.add_theme_color_override("font_pressed_color",Color("8a501c"))
+ button.add_theme_color_override("font_focus_color",Color("53331d"))
+ button.add_theme_color_override("font_shadow_color",Color("fff3ce"))
+ button.add_theme_constant_override("shadow_offset_y",1)
+
 static func build(game:Control)->void:
  var back=TextureRect.new()
  back.texture=BACK;back.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
@@ -59,33 +79,31 @@ static func build(game:Control)->void:
  title.add_theme_stylebox_override("panel",game.panel_style(Color("07575c"),game.GOLD,30));screen.add_child(title)
  var heading=put_label(game,title,"木乃伊工房｜製作結果",Rect2(20,10,840,58),38,game.CREAM)
  heading.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- var mummy=Mummy.new();mummy.position=Vector2(0,115);screen.add_child(mummy);mummy.configure(game.answers)
- var label_positions=[Vector2(12,125),Vector2(414,317),Vector2(12,480),Vector2(410,699),Vector2(12,765)]
+ var mummy=Mummy.new();mummy.position=Vector2(510,115);screen.add_child(mummy);mummy.configure(game.answers)
+ var label_positions=[Vector2(360,143),Vector2(980,321),Vector2(360,466),Vector2(980,632),Vector2(360,735)]
  for i in range(5):
   var line=Line2D.new();line.width=3;line.default_color=game.GOLD
-  var begin=label_positions[i]+Vector2(78,29)
+  var begin=label_positions[i]+Vector2(110,40)
   var end=mummy.position+mummy.anchors[i]
   line.points=PackedVector2Array([begin,end]);screen.add_child(line)
   var arrow=Polygon2D.new();var direction=(end-begin).normalized();var side=direction.orthogonal()*5
   arrow.polygon=PackedVector2Array([end,end-direction*14+side,end-direction*14-side]);arrow.color=game.GOLD;screen.add_child(arrow)
-  var button=put_button(game,screen,"Hotspot%d"%i,("✓ " if game.answers[i]==0 else "× ")+Data.LABELS[i],Rect2(label_positions[i],Vector2(154,58)),func():game.open_detail(i))
+  var button=put_button(game,screen,"Hotspot%d"%i,Data.LABELS[i],Rect2(label_positions[i],Vector2(220,80)),func():game.open_detail(i))
+  egyptian_button(button)
   button.accessibility_description=Data.OPTIONS[i][game.answers[i]]
- var panel=Panel.new();panel.name="ResultSummary";panel.position=Vector2(604,112);panel.size=Vector2(958,724)
- panel.add_theme_stylebox_override("panel",game.panel_style(Color("fff1d1"),game.GOLD,26));screen.add_child(panel)
- put_label(game,panel,"完成 %d / 5 題  ·  %d 分"%[Data.score(game.answers),Data.score(game.answers)*20],Rect2(30,22,880,55),34,game.TEAL)
- put_label(game,panel,"點選部位標籤或下列步驟，查看這次選擇的圖解。",Rect2(30,80,880,44),23,game.TEAL)
- for i in range(5):
-  var y=137+i*87
-  var row=put_button(game,panel,"Summary%d"%i,"%s  %s｜%s"%["✓" if game.answers[i]==0 else "×",Data.LABELS[i],Data.OPTIONS[i][game.answers[i]]],Rect2(26,y,906,70),func():game.open_detail(i))
-  row.add_theme_font_size_override("font_size",23 if i!=3 else 21)
- put_button(game,panel,"Replay","再玩一次",Rect2(30,596,280,64),func():game.new_attempt();game.render(),true)
- put_button(game,panel,"ReviewCombinations","243 組合試看",Rect2(334,596,285,64),func():game.review_controls=not game.review_controls;game.render())
- put_button(game,panel,"ResultHome","返回首頁",Rect2(643,596,285,64),func():game.page="home";game.render())
- put_label(game,screen,"審閱試玩版 · 美術待確認    組合 "+Data.code(game.answers),Rect2(608,846,900,34),19,game.CREAM)
+ var score_label=put_label(game,screen,"完成 %d / 5 題  ·  %d 分"%[Data.score(game.answers),Data.score(game.answers)*20],Rect2(38,32,310,48),25,game.CREAM)
+ put_label(game,screen,"點選五個部位標籤，查看你的製作結果。",Rect2(515,850,700,38),22,game.CREAM)
+ var replay=put_button(game,screen,"Replay","再玩一次",Rect2(1260,706,280,72),func():game.new_attempt();game.render(),true)
+ egyptian_button(replay,28)
+ var home=put_button(game,screen,"ResultHome","回到首頁",Rect2(1260,790,280,72),func():game.page="home";game.render())
+ egyptian_button(home,28)
+ if OS.get_cmdline_user_args().has("--review"):
+  put_button(game,screen,"ReviewCombinations","243 組合試看",Rect2(40,715,300,60),func():game.review_controls=not game.review_controls;game.render())
+  put_label(game,screen,"獨立精修預覽  ·  "+Data.code(game.answers),Rect2(40,790,370,40),20,game.CREAM)
  if game.review_controls:build_review(game,screen)
 
 static func build_review(game:Control,parent:Control)->void:
- var bar=Panel.new();bar.name="CombinationPicker";bar.position=Vector2(604,112);bar.size=Vector2(958,478)
+ var bar=Panel.new();bar.name="CombinationPicker";bar.position=Vector2(40,112);bar.size=Vector2(958,478)
  bar.add_theme_stylebox_override("panel",game.panel_style(Color("fff1d1"),game.GOLD,24));parent.add_child(bar)
  put_label(game,bar,"組合試看｜"+Data.code(game.answers)+"  /  243（按各列切換選項）",Rect2(25,18,900,46),26,game.TEAL)
  for i in range(5):
