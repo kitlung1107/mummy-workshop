@@ -57,6 +57,8 @@ static func _option(game: Control, value: int, small: bool=false) -> Button:
  var chosen: bool=game.answers[game.question]==value
  var row := _button(game,"",func(): game.choose(value),chosen)
  row.name="Option%d"%value
+ row.accessibility_name=Data.OPTIONS[game.question][value]
+ row.accessibility_description="已選取" if chosen else "按此選擇"
  row.set_meta("option_id",value)
  row.set_meta("question_id",game.question)
  row.custom_minimum_size.y=86 if small else 88

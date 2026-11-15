@@ -1,8 +1,8 @@
 extends RefCounted
 ## Entry screens are isolated from question/result rendering and answer data.
 const HOME = preload("res://assets/entry/home.png")
-const INSTRUCTIONS = preload("res://assets/entry/instructions.png")
-const INSTRUCTION_COPY = "你是一位古埃及防腐師。\n王室交給你一項重要任務：\n為法老王製作木乃伊。"
+const INSTRUCTIONS = preload("res://assets/entry/instructions-v3.png")
+const INSTRUCTION_COPY = "你是一位古埃及防腐師。\n王室交給你一項重要任務：\n為法魯王製作木乃伊。"
 const OUTCOME_COPY = "每個部分選一種做法。\n完成後，看看你製作的木乃伊會變成甚麼模樣！"
 
 static func build(game: Control, page: String) -> void:
@@ -27,6 +27,11 @@ static func _illustrated(game: Control, page: String) -> void:
  game.add_child(frame)
  var art := TextureRect.new()
  art.texture = texture
+ if page=="home":
+  var local_edit=ShaderMaterial.new()
+  local_edit.shader=preload("res://scripts/local_art_edit.gdshader")
+  local_edit.set_shader_parameter("edited_art",preload("res://assets/entry/home-covered-v3.png"))
+  art.material=local_edit
  art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
  art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  art.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -43,7 +48,7 @@ static func _illustrated(game: Control, page: String) -> void:
 static func _hotspot(frame: Control, id: String, caption: String, region: Rect2, action: Callable) -> void:
  var control := Button.new()
  control.name = id
- control.tooltip_text = caption
+ control.accessibility_name = caption if not caption.is_empty() else ("開始遊戲" if id=="StartGame" else "接受任務")
  control.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
  control.position = region.position * frame.size
  control.size = region.size * frame.size

@@ -1,52 +1,50 @@
-# 木乃伊工房 · 獨立 Godot 試玩版
+# 木乃伊工房
 
-這是供審閱及試玩的第一版。採用 A 卡通方向的青金配色、完整木乃伊及同一套原創向量母版，讓 243 個答案組合保持比例一致。細節美術仍可在審閱後調整。
+中一歷史教育遊戲，使用 Godot 4.7.2、GDScript 及 Compatibility renderer。五題各有三個選項，完成後呈現同一具完整木乃伊的 243 種選擇組合，並提供 15 款對應解說。
 
 ## 開啟遊戲
 
-- **Godot 專案**：用 Godot 4.6.3 開啟 `godot-project/project.godot`（原始碼目錄內為 `project.godot`），按 F6/F5 執行主場景。專案使用 GDScript 及 Compatibility renderer。
-- **Web 試玩包**：可先在解壓後目錄執行 `python3 serve_game.py` 自動開啟本機試玩。亦可在 `web` 目錄執行 `python3 -m http.server 8000`，再於瀏覽器開啟 `http://localhost:8000`。必須經本機 HTTP 開啟，不能直接雙擊 `index.html`；需要 WebGL 2.0 / WebAssembly。沒有部署。
-- **Linux**：如使用包內 Linux build，給 `mummy-workshop.x86_64` 執行權限後直接開啟。
-- **243 組圖像審閱**：直接用瀏覽器開啟 `review/木乃伊工房-243組圖像審閱.html`。這份獨立檔案不需伺服器，可搜尋五位代碼、按分數篩選及放大。
+以 Godot 4.7.2 開啟本目錄的 `project.godot`，匯入素材後按 F5。
 
-## 已實作
+Windows 可執行 `Launch-Game.cmd`。啟動器會搜尋 `GODOT4` 環境變數指定的執行檔、相鄰 `runtime` 目錄、桌面及 PATH。找不到引擎時可直接使用 Godot 編輯器。`Launch-243-Review.cmd` 可直達結果頁，再按「243 組合試看」切換選項。
 
-首頁 → 開始遊戲 → 只說明玩法 → 五題三選一 → 全部提交才揭曉。每次開始打亂選項顯示順序，內部代碼保持固定。學生可用上一步修改；未選答案不能下一步，未填齊不能提交。
+此版本以桌面試玩為驗證範圍，未重新優化手機或 iPad，沒有提供新的 Web 匯出包。
 
-結果是一具完整木乃伊，五個箭嘴標籤分別開啟所選做法、對錯、局部示意、後果與正確做法。彈窗同時只開一個，背景按鈕及鍵盤焦點鎖定；點空白、返回按鈕或 Esc 關閉。
+## 遊玩與結果
 
-紙草始終是紙草，不存在「不包裹」選項。金色面具不是全身盔甲。表面濕痕與腹部污斑分區；頭部缺口留在面具上方，面具不破裂；器官仍在且未填充時保留腹部圓度；移除心臟不會憑空造成腐敗污斑。棺外身體及附著效果一起移動。部分不同答案的外觀可以相同，例如內臟 A / B，差異由標籤和彈窗解釋。
+首頁 → 玩法 → 五題三選一 → 提交 → 結果。答題頁隨機排列選項，內部 A／B／C ID 保持固定；提交前可返回修改，未選答案時不能進入下一步。
 
-素材由 `tools/generate_assets.py` 的共同 SVG 母版確定產生。不是在玩家提交後即時用 AI 生成。所有結果與 15 張解說圖都已預先匯入 Godot。
+左側木乃伊組合亞麻布或紙草、面具、棺木位置及局部效果。保留腦部或內臟會顯示紫色氣味提示；清水與啤酒分別呈現不同濕痕；面具及包裹遮住身體時仍保留可見提示。移除心臟不會憑空增加腐敗效果，其宗教意義由解說呈現。
 
-## 紀錄與未來接入
+點五個部位標籤或右側步驟，開啟所選方法的解說，同時只顯示一個視窗。按「返回木乃伊」、右上角關閉、視窗外空白或 Esc 可關閉；Tab／Enter 保留鍵盤操作。滑鼠不再顯示重複提示，返回按鈕使用貼合圖像的膠囊形點擊範圍，鍵盤焦點細線留在按鈕內。
 
-現階段沒有登入、Firestore、任何網絡 API、派幣或持久化紀錄。每次完成只在本次執行的記憶體加入一份紀錄：UTC 完成時間、答對題數、分數、五題各自對錯。重複提交被擋下，重玩可建立新紀錄。關閉遊戲會清除這些臨時紀錄，中途答案也不儲存。
+依 Lung 指定，遊戲文字統一使用「法魯王」，包括玩法及安葬圖解中的文字。首頁胸前布料由 imagegen 局部編輯，遊戲只顯示修補範圍，保留其餘原圖像素。十五款圖解與合成木乃伊使用已審閱的卡通插畫素材。
 
-未來由網站後端實作：首次完成每答對一題派 20 幣，首次 0 分仍算首次；之後重玩不派幣，但每次完成保存日期、分數及逐題對錯。必須以伺服器驗證答案、原子交易及冪等提交處理重試與多頁並發；此版沒有實作或宣稱驗證這些功能。
+## 程式與素材
+
+- `scripts/content.gd`：題庫、答案、計分及效果規則。
+- `scripts/entry_pages.gd`、`question_pages.gd`：首頁、玩法及答題介面。
+- `scripts/result_pages.gd`：結果、243 組合選擇器及十五款解說映射。
+- `scripts/mummy_renderer.gd`、`body_effects.gdshader`：完整木乃伊、材質、遮擋及效果。
+- `scripts/art_button.gd`：圖像按鈕點擊範圍與鍵盤焦點。
+- `assets/composite/`、`assets/explanations/`：目前結果系統使用的插畫。
+
+成績只保存在本次遊戲記憶體，沒有登入、Firestore、成績後端或網絡依賴。每答對一題得 20 分；組合試看不新增學生成績。
 
 ## 驗證
 
-`godot --headless --path . --script tests/test_all.gd`
+在有圖形顯示的桌面執行以下命令；`godot` 代表 Godot 4.7.2 執行檔：
 
-此版自動結果：49,350 項檢查通過、0 失敗；243 組答案；六種尺寸共 1,458 組控制項版面；每組五個彈窗，共 7,290 個狀態。涵蓋素材可讀、分數、關鍵視覺規則、標籤範圍及最少 44px 點擊高度、彈窗鎖定、關閉、重玩與完成紀錄。
+```text
+godot --headless --editor --import --path .
+godot --headless --path . --script res://tests/test_session.gd
+godot --path . --audio-driver Dummy --script res://tests/test_all.gd
+godot --path . --audio-driver Dummy --script res://tests/test_v3.gd
+godot --path . --audio-driver Dummy --script res://tests/test_final_render.gd
+```
 
-Godot Web 匯出已在 Chromium WebGL 2.0 執行，並以實際滑鼠輸入檢查首頁、玩法頁、五題作答、提交、結果、彈窗及不同尺寸。測試紀錄見 `review/test-report.json`。原始碼可重新執行測試。
+測試涵蓋全部 243 組、1,215 次實際滑鼠開啟解說、選項映射、計分與重複提交、遮擋效果、十五款返回按鈕邊界、懸停、鍵盤導覽及桌面縮放；另以像素比較驗證首頁修補範圍外沒有變動。截圖和 JSON 報告寫入 `review/`，該目錄與執行日誌不提交到 Git。
 
-限制：自動幾何檢查不能取代逐張人工審圖；已人工檢查關鍵組合預覽及抽樣實際畫面，未逐張人工核對 243 張圖。手機及平板為軟件視窗尺寸檢查，未使用真實手機、iPad 或 Safari 觸控測試。沒有做 Firestore／派幣整合測試，因這些功能未接入。
+## 授權
 
-## 史實與視覺提示
-
-本題採用課本典型流程，不代表古埃及每個年代、階層及個案。心臟保留涉及信仰；經鼻取腦不表示內部骨骼完全無損。金面具加棺木是此遊戲法老角色的任務條件。濕痕、污斑、氣味、頭部缺口、啤酒色及泡沫是遊戲化教學提示，不能當成真實保存實驗或必然腐敗表現。
-
-參考資料：
-- Smithsonian, Egyptian Mummies: https://www.si.edu/spotlight/ancient-egypt/mummies
-- Australian Museum, How were ancient Egyptians mummified?: https://australian.museum/learn/cultures/international-collection/ancient-egyptian/how-were-ancient-egyptians-mummified/
-- British Museum, Linen bag of salt for mummification: https://artsandculture.google.com/asset/linen-bag-of-salt-for-mummification/cgFaCN4U-fYSrg
-- Godot Web export documentation: https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_web.html
-
-## 素材與打包
-
-圖形為本專案原創可編輯 SVG。中文字體是 Noto Sans CJK TC 子集，授權見 `assets/FONT-LICENSE.txt`；Godot 使用 MIT 授權，見 `GODOT-LICENSE.txt`。不包含網站原有程式、帳戶或其他工作區檔案。
-
-匯出預設中的 custom_template 路徑只對開發環境有效。換電腦可在 Godot 安裝 4.6.3 export templates，清空 custom_template 路徑後重新匯出。Web 使用單執行緒，沒有 PWA 或後端連線。
+中文字型為 Noto Sans CJK TC 子集，系統中文字型補足缺字；授權見 `assets/FONT-LICENSE.txt`。Godot 授權見 `GODOT-LICENSE.txt`。保存與腐敗效果為簡化教學示意。
