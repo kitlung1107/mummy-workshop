@@ -19,10 +19,8 @@ void fragment(){
  float factor=1.0-(full_belly?(hollow?.20:.07)*torso:0.0);
  uv.x=(uv.x-.5)*factor+.5;
  vec2 sample_uv=uv;
- if(hollow||wet>0){
-  // Match the reviewed head/mask height while keeping the feet and body frame fixed.
-  sample_uv.y=uv.y<.20?uv.y*1.35:.27+(uv.y-.20)*(.73/.8);
- }
+ // The high-resolution variants share anatomical proportions. Sampling stays
+ // linear; the former wet/hollow head warp would distort these new drawings.
  vec4 base=texture(TEXTURE,sample_uv);
  if(uv.x<0.0||uv.x>1.0)base.a=0.0;
  if(damaged_head&&uv.y<.072&&uv.x>.64+uv.y*1.7)base.a=0.0;

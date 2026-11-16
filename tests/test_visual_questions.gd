@@ -5,6 +5,7 @@ var failures: Array=[]
 var checks=0
 var destination="res://review/questions"
 func _initialize() -> void:
+ Input.use_accumulated_input=false
  for argument in OS.get_cmdline_user_args():
   if argument.begins_with("--output-dir="):
    destination=argument.trim_prefix("--output-dir=")
@@ -29,14 +30,16 @@ func click(id: String) -> void:
   var event=InputEventMouseButton.new()
   event.button_index=MOUSE_BUTTON_LEFT;event.pressed=down
   event.position=point;event.global_position=point
-  Input.parse_input_event(event)
-  await process_frame
+  root.push_input(event,true)
+ # Keep each synthetic press/release together so native window input cannot
+ # interrupt the click while another rendering test owns desktop focus.
  await settle()
 func screenshot(name: String) -> void:
  RenderingServer.force_draw(false)
  check(root.get_texture().get_image().save_png(destination+"/"+name+".png")==OK,"capture "+name)
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(destination)
+ root.size=Vector2i(1600,900)
  game=load("res://ritual.tscn").instantiate()
  root.add_child(game);await settle()
  check(Data.OPTIONS[1][0]=="取出肝、肺、胃、腸，心臟留在體內","correct organ identity preserved")
@@ -44,7 +47,11 @@ func run() -> void:
  check(Data.OPTIONS[3][1]=="直接包亞麻布","no-filling distractor wording")
  var sizes=[Vector2i(1600,900),Vector2i(1100,820),Vector2i(1366,768),Vector2i(1024,768),Vector2i(768,1024),Vector2i(390,844),Vector2i(844,390)]
  for viewport_size in sizes:
-  root.size=viewport_size;game.page="home";game.render();await settle()
+  root.size=viewport_size
+  # Native window resize events can arrive after the first layout frames.
+  # Let the pending resize finish before pressing a button that render replaces.
+  await create_timer(.25).timeout
+  game.page="home";game.render();await settle()
   var suffix="%dx%d"%[viewport_size.x,viewport_size.y]
   if viewport_size==sizes[0]:await screenshot("home-"+suffix)
   await click("StartGame")

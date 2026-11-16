@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-16",
+  "base_commit": "9c2cd9de0807b5c81f29adc6d9244925596326bc",
+  "method": "Built-in imagegen; identity-preserving redraw followed by material edits. Not recovered originals, not an upscale or sharpen filter.",
+  "search": ["Local assets and tools", "All local Git history for assets/refined", "Local generated_images cache (no related mummy source)", "Project-related local desktop/download candidates"],
+  "existing_reference": "assets/composite/sprites.png is 1536x1024; dry body cells about 276x936, coffin cell 346x978 and mask cell 286x264. The complete nine high-resolution v3 sources were not found.",
+  "prompt_invariants": "Same friendly warm educational cartoon illustration; front-facing standing character; closed wrapped eyes; hands crossed low over abdomen; long tapered legs and paired toes; natural height about 3.3 times maximum width; head about 17 percent full height. One complete figure on true transparent background, clean neutral alpha edges. No mask, coffin, text, extra props, smoke or odor waves. High-resolution newly resolved cloth/fiber detail, not merely enlargement or sharpening.",
+  "assets": [
+    {"file":"linen-dry.png","reference":"original linen-dry.png","edit":"Repaint the same dry ivory beige linen character, with fine woven fibers; preserve pose and natural proportions."},
+    {"file":"linen-filled-water-v3.png","reference":"generated linen-dry.png","edit":"Only wet material: darker tan absorbed patches, restrained clear wet sheen and tiny downward rivulets attached to cloth folds. No blue paint, outward or sideways streams, detached drops or puddles."},
+    {"file":"linen-filled-beer-v3.png","reference":"generated linen-dry.png","edit":"Only beer-soaked material: amber golden-brown absorbed patches, thin amber rivulets following downward fabric folds and sparse tiny foam beads attached to cloth. No outward streams, detached drops or puddles."},
+    {"file":"linen-unfilled-dry-v3.png","reference":"generated linen-dry.png","edit":"Without padding: noticeably skinny limbs and sunken narrow torso, slack wrinkled linen at elbows and abdomen. Keep head size/position, overall height, crossed hands and feet. No exposed bones or anatomy. Dry ivory beige linen."},
+    {"file":"linen-unfilled-water-v3.png","reference":"generated linen-unfilled-dry-v3.png","edit":"Preserve exact thin silhouette and slack cloth. Only water-soaked tan patches, clear wet highlights and downward surface rivulets. No external streams, detached drops or puddles."},
+    {"file":"linen-unfilled-beer-v3.png","reference":"generated linen-unfilled-dry-v3.png","edit":"Preserve exact thin silhouette and slack cloth. Only amber beer-soaked patches and downward surface rivulets with sparse attached foam beads. No external streams, detached drops or puddles."},
+    {"file":"papyrus-dry.png","reference":"original papyrus-dry.png","edit":"Repaint the same character with dry golden-tan wide overlapping papyrus panels tied by cords at the same heights. Resolve longitudinal plant fibers; do not substitute linen weave."},
+    {"file":"papyrus-filled-water-v3.png","reference":"generated papyrus-dry.png","edit":"Preserve silhouette, head, pose, hands, panel boundaries and knots. Only damp dark-tan absorbed areas and clear highlights/downward rivulets on papyrus fibers. No blue paint or external streams."},
+    {"file":"papyrus-filled-beer-v3.png","reference":"generated papyrus-dry.png","edit":"Preserve silhouette, head, pose, hands, panels and knots. Only amber golden-brown beer patches and downward surface rivulets, sparse tiny attached foam beads. No external streams."}
+  ],
+  "source_pixels": "Eight assets are 724x2172; papyrus-dry is 723x2175. Authoritative dimensions in review/asset-audit.json.",
+  "runtime_budget": "Godot import size_limit=1320; mipmaps enabled. Uniform fit into 208x660 body frame. Original generated pixels are retained in assets/refined. No manual painting or artificial sharpening."
+}

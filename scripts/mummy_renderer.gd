@@ -11,6 +11,15 @@ var animated=true
 var effects:Control
 var anchors:Array[Vector2]=[]
 var vapors:Array[ShaderMaterial]=[]
+const BODY_FRAME=Vector2(208,660)
+
+static func fitted_rect(natural:Vector2, frame:Rect2)->Rect2:
+ var factor=minf(frame.size.x/natural.x,frame.size.y/natural.y)
+ var extent=natural*factor
+ return Rect2(frame.position+(frame.size-extent)*.5,extent)
+
+func body_point(point:Vector2)->Vector2:
+ return body_art.position+point/BODY_FRAME*body_art.size
 
 static func sprite(region:Rect2)->AtlasTexture:
  var atlas=AtlasTexture.new()
@@ -24,14 +33,14 @@ func art(parent:Control, id:String, region:Rect2, rect:Rect2)->TextureRect:
  image.name=id
  image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  image.texture=sprite(region)
- image.position=rect.position
+ var fitted=fitted_rect(region.size,rect)
+ image.position=fitted.position
 
  image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  image.stretch_mode=TextureRect.STRETCH_SCALE
- image.size=rect.size
+ image.size=fitted.size
  image.mouse_filter=Control.MOUSE_FILTER_IGNORE
  parent.add_child(image)
- image.set_deferred("size",rect.size)
  return image
 
 func configure(selected:Array)->void:
@@ -40,7 +49,10 @@ func configure(selected:Array)->void:
  name="CompositeMummy"
  size=Vector2(580,740)
  mouse_filter=Control.MOUSE_FILTER_IGNORE
- var coffin_rect=Rect2(139,4,278,718) if rules.in_coffin else Rect2(370,55,180,640)
+ # Preserve the source coffin ratio, its center and height. The lid reads this
+ # same rectangle, so the reveal and burial hotspot remain attached.
+ var coffin_extent=Vector2(346,978)*((718.0 if rules.in_coffin else 640.0)/978.0)
+ var coffin_rect=Rect2(Vector2(278-coffin_extent.x*.5,4) if rules.in_coffin else Vector2(460-coffin_extent.x*.5,55),coffin_extent)
  art(self,"Coffin",Rect2(20,24,346,978),coffin_rect)
  body=Control.new()
  body.name="WholeMummy"
@@ -70,6 +82,11 @@ func configure(selected:Array)->void:
   asset_path="res://assets/refined/"+material_name+"-filled-"+state+"-v3.png"
  body_art.texture=load(asset_path)
  body_art.set_meta("material_asset",asset_path)
+ # Every material uses a uniform scale; never stretch a small wet sprite into
+ # the old 208 x 660 rectangle. Geometry below follows the actual fitted art.
+ var body_rect=fitted_rect(body_art.texture.get_size(),Rect2(Vector2.ZERO,BODY_FRAME))
+ body_art.position=body_rect.position
+ body_art.size=body_rect.size
  var material_new=ShaderMaterial.new()
  material_new.shader=EFFECT
  material_new.set_shader_parameter("hollow",rules.hollow)
@@ -85,16 +102,18 @@ func configure(selected:Array)->void:
   torn.texture=load("res://assets/refined/torn-wrap.png")
   torn.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
   torn.stretch_mode=TextureRect.STRETCH_SCALE
-  torn.position=Vector2(153,-9) if rules.mask else Vector2(134,-6)
-  torn.size=Vector2(57,77) if rules.mask else Vector2(46,64)
+  var torn_frame=Rect2(body_point(Vector2(153,-9) if rules.mask else Vector2(134,-6)),(Vector2(57,77) if rules.mask else Vector2(46,64))*body_art.size/BODY_FRAME)
+  var torn_rect=fitted_rect(torn.texture.get_size(),torn_frame)
+  torn.position=torn_rect.position
+  torn.size=torn_rect.size
   torn.mouse_filter=Control.MOUSE_FILTER_IGNORE
   if rules.material=="papyrus":torn.modulate=Color("d8b271")
   body.add_child(torn)
  if rules.mask:
-  art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(32,-6,144,134))
+  art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(body_point(Vector2(32,-6)),Vector2(144,134)*body_art.size/BODY_FRAME))
  effects=Control.new();effects.name="Atmosphere";effects.mouse_filter=Control.MOUSE_FILTER_IGNORE;effects.size=size;body.add_child(effects)
  # User review: no external odor waves, haze or plumes.
- anchors=[body.position+Vector2(102,65),body.position+Vector2(112,240),body.position+Vector2(118,355),body.position+Vector2(114,620),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
+ anchors=[body.position+body_point(Vector2(102,65)),body.position+body_point(Vector2(112,240)),body.position+body_point(Vector2(118,355)),body.position+body_point(Vector2(114,620)),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
  if is_instance_valid(effects):effects.queue_redraw()
 
 func add_vapor(rect:Rect2,strength:float)->void:

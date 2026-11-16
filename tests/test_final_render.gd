@@ -18,7 +18,8 @@ func run()->void:
   for i in range(5):a.push_front(v%3);v=int(v/3)
   game.answers=a;game.page="result";game.render();await settle()
   var m=game.find_child("CompositeMummy",true,false);m.animated=false;m.clock=0
-  check(m.body_art.size==Vector2(208,660),"body fits "+Data.code(a))
+  check(m.body_art.size.x<=208.01 and m.body_art.size.y<=660.01,"body fits "+Data.code(a))
+  check(is_equal_approx(m.body_art.size.aspect(),m.body_art.texture.get_size().aspect()),"body keeps source ratio "+Data.code(a))
   check(m.get_node("Coffin").get_global_rect().end.y<=850,"coffin not clipped "+Data.code(a))
   await RenderingServer.frame_post_draw
   var image=root.get_texture().get_image()

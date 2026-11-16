@@ -2,7 +2,8 @@ extends RefCounted
 ## Presentation only: stable identities and game logic remain owned by main/content.
 const Data=preload("res://scripts/content.gd")
 const BACKGROUND=preload("res://assets/questions/workshop-background.png")
-const SHEETS=[preload("res://assets/questions/visual/question-1.png"),preload("res://assets/questions/visual/question-2.png"),preload("res://assets/questions/visual/question-3.png"),preload("res://assets/questions/visual/question-4.png"),preload("res://assets/questions/visual/question-5.png")]
+# Load only the current sheet. The other four keep no GPU texture resident.
+const SHEETS=["res://assets/questions/visual/question-1.png","res://assets/questions/visual/question-2.png","res://assets/questions/visual/question-3.png","res://assets/questions/visual/question-4.png","res://assets/questions/visual/question-5.png"]
 const INK=Color("164d4e")
 const GOLD=Color("d5ac53")
 const PAPER=Color("fff6df")
@@ -71,7 +72,7 @@ static func _option(game:Control,value:int,width:float,art_height:float,caption_
  stack.offset_left=7;stack.offset_top=7;stack.offset_right=-7;stack.offset_bottom=-7
  stack.add_theme_constant_override("separation",0);card.add_child(stack)
  var picture=TextureRect.new()
- var sheet:Texture2D=SHEETS[game.question]
+ var sheet:Texture2D=load(SHEETS[game.question])
  var atlas=AtlasTexture.new()
  atlas.atlas=sheet
  var cell_width:float=sheet.get_width()/3.0
