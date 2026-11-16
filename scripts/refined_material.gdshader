@@ -1,7 +1,6 @@
 shader_type canvas_item;
 uniform bool hollow=false;
 uniform bool full_belly=false;
-uniform bool damaged_head=false;
 uniform bool head_decay=false;
 uniform bool organ_stain=false;
 uniform bool papyrus=false;
@@ -23,7 +22,6 @@ void fragment(){
  // linear; the former wet/hollow head warp would distort these new drawings.
  vec4 base=texture(TEXTURE,sample_uv);
  if(uv.x<0.0||uv.x>1.0)base.a=0.0;
- if(damaged_head&&uv.y<.072&&uv.x>.64+uv.y*1.7)base.a=0.0;
  float n=fbm(uv*vec2(21.0,58.0));
  float fine=fbm(uv*vec2(65.0,124.0));
  float head=patch(uv,vec2(.72,.10),vec2(.33,.09))+patch(uv,vec2(.34,.19),vec2(.26,.06))+patch(uv,vec2(.51,.215),vec2(.48,.045));

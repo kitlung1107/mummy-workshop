@@ -91,7 +91,6 @@ func configure(selected:Array)->void:
  material_new.shader=EFFECT
  material_new.set_shader_parameter("hollow",rules.hollow)
  material_new.set_shader_parameter("full_belly",rules.belly_full)
- material_new.set_shader_parameter("damaged_head",rules.head_notch)
  material_new.set_shader_parameter("organ_stain",rules.organ_stain)
  material_new.set_shader_parameter("head_decay",rules.head_odor)
  material_new.set_shader_parameter("papyrus",rules.material=="papyrus")
@@ -99,18 +98,25 @@ func configure(selected:Array)->void:
  body_art.material=material_new
  if rules.head_notch:
   var torn=TextureRect.new();torn.name="TornTempleWrap"
-  torn.texture=load("res://assets/refined/torn-wrap.png")
+  # A compact recessed side fracture replaces the detached hanging strip.
+  # It remains behind the complete gold mask; its upper lip is visible above it.
+  torn.texture=load("res://assets/refined/head-side-crack-"+material_name+"-b.png")
+  torn.set_meta("effect","head-side-crack-b")
+  torn.set_meta("material",material_name)
   torn.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
   torn.stretch_mode=TextureRect.STRETCH_SCALE
-  var torn_frame=Rect2(body_point(Vector2(153,-9) if rules.mask else Vector2(134,-6)),(Vector2(57,77) if rules.mask else Vector2(46,64))*body_art.size/BODY_FRAME)
+  var torn_frame=Rect2(body_point(Vector2(112,-1) if rules.mask else Vector2(115,8)),Vector2(44,53)*body_art.size/BODY_FRAME)
   var torn_rect=fitted_rect(torn.texture.get_size(),torn_frame)
   torn.position=torn_rect.position
   torn.size=torn_rect.size
   torn.mouse_filter=Control.MOUSE_FILTER_IGNORE
-  if rules.material=="papyrus":torn.modulate=Color("d8b271")
+  if answers[2]==1:torn.modulate=Color("c5b69e")
+  elif answers[2]==2:torn.modulate=Color("d9b47a")
   body.add_child(torn)
  if rules.mask:
-  art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(body_point(Vector2(32,-6)),Vector2(144,134)*body_art.size/BODY_FRAME))
+  # The fractured variant exposes a narrow wrapped cap above the intact mask.
+  # Its size and source artwork are unchanged; the face still aligns to the head.
+  art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(body_point(Vector2(32,8 if rules.head_notch else -6)),Vector2(144,134)*body_art.size/BODY_FRAME))
  effects=Control.new();effects.name="Atmosphere";effects.mouse_filter=Control.MOUSE_FILTER_IGNORE;effects.size=size;body.add_child(effects)
  # User review: no external odor waves, haze or plumes.
  anchors=[body.position+body_point(Vector2(102,65)),body.position+body_point(Vector2(112,240)),body.position+body_point(Vector2(118,355)),body.position+body_point(Vector2(114,620)),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
