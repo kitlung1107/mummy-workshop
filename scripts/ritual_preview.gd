@@ -85,7 +85,7 @@ func skip_ritual()->void:
 
 func _on_revealed()->void:
  finished=true;hotspots.visible=true;result_actions.visible=true
- status_label.text="你的木乃伊，已經甦醒。"
+ status_label.text=""
 
 func open_detail(index:int)->void:
  if not finished:return
