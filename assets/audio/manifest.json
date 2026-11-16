@@ -1,0 +1,568 @@
+{
+  "sampleRate": 32000,
+  "format": "mono PCM16 WAV",
+  "approval": "Second-draft music; requested material cues; v5 metal tray; original page-turn preserved",
+  "assets": [
+    {
+      "id": "loop-home",
+      "label": "首頁｜河畔迎賓",
+      "kind": "music",
+      "description": "Oud 旋律前景；6/8 搖曳感，72 拍（附點四分音符）；26.667 秒。",
+      "sourceIds": [
+        "oud-a",
+        "oud-c",
+        "oud-g",
+        "dum",
+        "tek"
+      ],
+      "loop": true,
+      "oldId": "loop-home",
+      "file": "loop-home.wav",
+      "duration": 26.66665625,
+      "peakDb": -13.880038318843752,
+      "rmsDb": -29.000315639078806,
+      "peak": 0.202301025390625,
+      "seamDelta": 0,
+      "sha256": "b5d9e92acec0583db3abef5a52e6465b500f0e1abe0379e9b1be942454c5d5c8"
+    },
+    {
+      "id": "loop-workshop",
+      "label": "工房｜手作節奏",
+      "kind": "music",
+      "description": "乾爽 darbuka 手鼓作主角；4/4、96 BPM；20 秒。沒有吹管或同一條首頁旋律。",
+      "sourceIds": [
+        "dum",
+        "tek",
+        "oud-a",
+        "oud-c",
+        "oud-g"
+      ],
+      "loop": true,
+      "oldId": "loop-workshop",
+      "file": "loop-workshop.wav",
+      "duration": 20,
+      "peakDb": -11.05687724071182,
+      "rmsDb": -30.138031826286955,
+      "peak": 0.279998779296875,
+      "seamDelta": 0,
+      "sha256": "5d529b00c2eb81d714d55299778534d2e8d498314b349ecbc492cb6a422062b1"
+    },
+    {
+      "id": "loop-result",
+      "label": "結果｜靜聽河風",
+      "kind": "music",
+      "description": "Ney 真人吹奏長句與自然換氣；散板、無鼓、無撥弦；27 秒，句尾留白。",
+      "sourceIds": [
+        "ney"
+      ],
+      "loop": true,
+      "oldId": "loop-result",
+      "file": "loop-result.wav",
+      "duration": 27,
+      "peakDb": -13.994787903415101,
+      "rmsDb": -29.000264511259605,
+      "peak": 0.19964599609375,
+      "seamDelta": 0,
+      "sha256": "f8bc6fe51f4d4ab8b7d4e22ea699eb0d79518a4122c0fc6223b01ca24bcccf09"
+    },
+    {
+      "id": "ui-tap",
+      "label": "按鈕｜木件輕放",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "wood"
+      ],
+      "loop": false,
+      "oldId": "ui-tap",
+      "file": "ui-tap.wav",
+      "duration": 0.28,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -36.6189958762347,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "fb1f30d907a4cd623b9a3a9f22c34f0200e3ae74d5670979ea6226859e0511cf"
+    },
+    {
+      "id": "tool",
+      "label": "工具｜落在木桌",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "wood",
+        "bowl"
+      ],
+      "loop": false,
+      "oldId": "tool",
+      "file": "tool.wav",
+      "duration": 0.42,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -30.30282481665988,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "65e9a8a0ee194d636b217c40aec46fc56085cc9032b2c40dc5ee4902858d08d3"
+    },
+    {
+      "id": "mineral",
+      "label": "天然鹼｜細粒落盤",
+      "kind": "sfx",
+      "description": "以米粒落容器錄音作天然鹼顆粒擬音，非天然鹼實錄。",
+      "sourceIds": [
+        "rice"
+      ],
+      "loop": false,
+      "oldId": "mineral",
+      "file": "mineral.wav",
+      "duration": 0.65,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -30.123349117715815,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "4f2fb4c53193bc39776b2103a72e55826f7bde2d7e4bec0d2ea26e8c21ee9e7d"
+    },
+    {
+      "id": "liquid",
+      "label": "清水／啤酒｜液體輕晃",
+      "kind": "sfx",
+      "description": "水錄音擬音；清水與啤酒共用。",
+      "sourceIds": [
+        "water"
+      ],
+      "loop": false,
+      "oldId": "liquid",
+      "file": "liquid.wav",
+      "duration": 0.75,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -30.22449988470777,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "054ae6dcdc77d0205f06228c3a87b519953cf2057f33d3e807932a659ce971c9"
+    },
+    {
+      "id": "cloth",
+      "label": "包裹｜布料展開",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "cloth"
+      ],
+      "loop": false,
+      "oldId": "cloth",
+      "file": "cloth.wav",
+      "duration": 0.78,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -33.46028259766275,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "e83dbc5b7db71e96ab3bc2e484019571a4d7ace1fb3ccba2777f1a2a72b8aa5f"
+    },
+    {
+      "id": "detail-open",
+      "label": "圖解｜紙布展開",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "cloth"
+      ],
+      "loop": false,
+      "oldId": "detail-open",
+      "file": "detail-open.wav",
+      "duration": 0.66,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -33.20860812670195,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "c491f5814a6560d9389a6e45f505bc3ccc674022aed1495dbffaa05d19237296"
+    },
+    {
+      "id": "detail-close",
+      "label": "圖解｜輕輕收起",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "cloth",
+        "wood"
+      ],
+      "loop": false,
+      "oldId": "detail-close",
+      "file": "detail-close.wav",
+      "duration": 0.42,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -30.14473824798865,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "ee28f88c15048558790a71da9ac56be66c669e24af669a5f5846b9a27e1d0dbe"
+    },
+    {
+      "id": "mission",
+      "label": "接受任務｜Oud 招呼",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "oud-a",
+        "oud-c"
+      ],
+      "loop": false,
+      "oldId": "mission",
+      "file": "mission.wav",
+      "duration": 1.5,
+      "peakDb": -12.21468779362074,
+      "rmsDb": -27.00380505757559,
+      "peak": 0.24505615234375,
+      "seamDelta": 0,
+      "sha256": "db3cd0e5de83045f1efa53b591501a7f0622bdb54777dc21887c82c57e007189"
+    },
+    {
+      "id": "restart",
+      "label": "再玩一次｜重新攤開",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "cloth",
+        "wood"
+      ],
+      "loop": false,
+      "oldId": "restart",
+      "file": "restart.wav",
+      "duration": 0.76,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -33.319441049971715,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "2c761ab9f9865d3a2193498b72aaccb37e6253a03290fbe9ba1e49f955d182ef"
+    },
+    {
+      "id": "home-return",
+      "label": "回到首頁｜輕收木件",
+      "kind": "sfx",
+      "description": "真實物件錄音剪輯；不提示正誤。",
+      "sourceIds": [
+        "wood",
+        "cloth"
+      ],
+      "loop": false,
+      "oldId": "home-return",
+      "file": "home-return.wav",
+      "duration": 0.56,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -33.830144727683496,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "2eb664a37009a2fdaf12a689844a9b6f156cb7601e811ff49fa7142f8114eaa6"
+    },
+    {
+      "id": "page-turn",
+      "label": "翻書｜保留上一版",
+      "kind": "sfx",
+      "description": "Lung 已認可，原檔逐位元保留；原創程序合成，不改稱實錄。",
+      "sourceIds": [
+        "original-v1"
+      ],
+      "loop": false,
+      "oldId": "page-turn",
+      "file": "page-turn.wav",
+      "duration": 0.38,
+      "peakDb": -26.51357957225688,
+      "rmsDb": -42.09350852052182,
+      "peak": 0.0472412109375,
+      "seamDelta": 0,
+      "sha256": "5af53d60a6e08dddff9f0062db3112b575337ee002dc8ac4e21ffbe6c47d8758"
+    },
+    {
+      "id": "coffin-4600",
+      "label": "開棺｜木蓋與弦音",
+      "kind": "sfx",
+      "description": "木件封記、真實磨擦、Oud 疏落三音；4.6 秒，無電子上升音或勝負提示。",
+      "sourceIds": [
+        "wood",
+        "slide",
+        "oud-a",
+        "oud-c",
+        "bowl",
+        "cloth"
+      ],
+      "loop": false,
+      "oldId": "coffin-4600",
+      "file": "coffin-4600.wav",
+      "duration": 4.6,
+      "peakDb": -12.041199826559248,
+      "rmsDb": -31.36623601780012,
+      "peak": 0.25,
+      "seamDelta": 0,
+      "sha256": "e86969d2843a280d61ff3d7b524e665c33fe81306c10b8616a904beb5c1fdbed"
+    },
+    {
+      "id": "nasal-metal",
+      "label": "鼻腔取腦｜金屬工具",
+      "sources": [
+        "metal-tools"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "metal tool handling"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 0.72,
+      "peakDb": -16.176349681728468,
+      "rmsDb": -27.000261341810226,
+      "peak": 0.155303955078125,
+      "seamDelta": 0,
+      "sha256": "c708f2860719f1627140bdf7769d55ffed131493fc3b5c857adf3f568503b61d",
+      "file": "nasal-metal.wav"
+    },
+    {
+      "id": "anoint-oil",
+      "label": "塗香油｜輕柔塗抹",
+      "sources": [
+        "lotion"
+      ],
+      "events": [
+        {
+          "at": 0.025,
+          "action": "lotion rub used as oil application foley"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 1.16,
+      "peakDb": -18.588511051454844,
+      "rmsDb": -27.000260660912396,
+      "peak": 0.117645263671875,
+      "seamDelta": 0,
+      "sha256": "348b4aa09af02a812a981716092fc3b46757987d29297ad7a42dcdbddc12be51",
+      "file": "anoint-oil.wav"
+    },
+    {
+      "id": "metal-tray",
+      "label": "金屬托盤放下（核准 v5）",
+      "sources": [
+        "metal-tray"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "short metallic contact, damped tail"
+        }
+      ],
+      "processing": {
+        "duration": 0.42,
+        "notches": [
+          {
+            "hz": 2406,
+            "Q": 5
+          },
+          {
+            "hz": 2562,
+            "Q": 7
+          }
+        ],
+        "gentleLowpassHz": 8000,
+        "bodyLowpassHz": 900,
+        "bodyGain": 1.1,
+        "decaySeconds": 0.047,
+        "targetRmsDb": -32,
+        "capPeakDb": -23.5
+      },
+      "duration": 0.42,
+      "peakDb": -23.500116402391992,
+      "rmsDb": -39.984541821584145,
+      "peak": 0.06683349609375,
+      "seamDelta": 0,
+      "sha256": "b3313e90344b41d7782222d66dcf54b3503e121c64fe9fd988425c1242705501",
+      "spectrum": {
+        "frames": 49,
+        "centroidHz": 2790.1874620364524,
+        "energyAbove2kHzPercent": 52.8031558266263,
+        "energyAbove4kHzPercent": 38.83205008564238,
+        "topBins": [
+          {
+            "frequencyHz": 1000,
+            "percent": 5.5058031472098765
+          },
+          {
+            "frequencyHz": 968.75,
+            "percent": 5.1042589509389975
+          },
+          {
+            "frequencyHz": 468.75,
+            "percent": 3.87965592995577
+          },
+          {
+            "frequencyHz": 1031.25,
+            "percent": 3.7354406123090906
+          },
+          {
+            "frequencyHz": 906.25,
+            "percent": 3.3876332640322384
+          },
+          {
+            "frequencyHz": 437.5,
+            "percent": 2.800024144129538
+          },
+          {
+            "frequencyHz": 5843.75,
+            "percent": 2.483325624738786
+          },
+          {
+            "frequencyHz": 2062.5,
+            "percent": 2.332243809509853
+          }
+        ]
+      },
+      "tailFrom100ms": {
+        "frames": 37,
+        "centroidHz": 2687.5156250327454,
+        "energyAbove2kHzPercent": 47.6259819701146,
+        "energyAbove4kHzPercent": 37.20787165442517,
+        "topBins": [
+          {
+            "frequencyHz": 906.25,
+            "percent": 5.488780359343696
+          },
+          {
+            "frequencyHz": 625,
+            "percent": 4.819798144394201
+          },
+          {
+            "frequencyHz": 4812.5,
+            "percent": 4.482625573300228
+          },
+          {
+            "frequencyHz": 4781.25,
+            "percent": 4.281586924345594
+          },
+          {
+            "frequencyHz": 4750,
+            "percent": 3.422717007084765
+          },
+          {
+            "frequencyHz": 937.5,
+            "percent": 3.074978946401595
+          },
+          {
+            "frequencyHz": 656.25,
+            "percent": 2.954449330873024
+          },
+          {
+            "frequencyHz": 843.75,
+            "percent": 2.70104397557083
+          }
+        ]
+      },
+      "tailRmsDb": -88.94179302763028,
+      "file": "metal-tray.wav"
+    },
+    {
+      "id": "fill-linen",
+      "label": "填充 → 亞麻布",
+      "sources": [
+        "rice",
+        "cloth",
+        "cloth"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "filling"
+        },
+        {
+          "at": 1.02,
+          "action": "linen wrap"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 1.9,
+      "peakDb": -15.288038002790598,
+      "rmsDb": -27.000261507217402,
+      "peak": 0.172027587890625,
+      "seamDelta": 0,
+      "sha256": "39a9a405382d4d9588d02e8203b24a2e467862991cb72638bdc519ce4a67b9b6",
+      "file": "fill-linen.wav"
+    },
+    {
+      "id": "fill-papyrus",
+      "label": "填充 → 紙草",
+      "sources": [
+        "rice",
+        "cloth",
+        "paper"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "filling"
+        },
+        {
+          "at": 1.02,
+          "action": "paper wrap"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 2.25,
+      "peakDb": -13.404556570614083,
+      "rmsDb": -27.000258964353154,
+      "peak": 0.21368408203125,
+      "seamDelta": 0,
+      "sha256": "9e6c187ca3b660801eacc3c9d6adafb40c03db3963eaecdc42f8b36982bd0ea4",
+      "file": "fill-papyrus.wav"
+    },
+    {
+      "id": "bed-placement",
+      "label": "棺旁｜放在床上",
+      "sources": [
+        "cloth",
+        "wood"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "cloth settles"
+        },
+        {
+          "at": 0.19,
+          "action": "soft supported weight"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 1.05,
+      "peakDb": -14.305658895167081,
+      "rmsDb": -27.000255716009512,
+      "peak": 0.192626953125,
+      "seamDelta": 0,
+      "sha256": "82e6f89686ba9035ccce18c098256ea9282c6d8bc5e93806c361507cbcd6d43a",
+      "file": "bed-placement.wav"
+    },
+    {
+      "id": "coffin-placement",
+      "label": "入棺｜承托移入及落定",
+      "sources": [
+        "cloth",
+        "slide",
+        "wood"
+      ],
+      "events": [
+        {
+          "at": 0,
+          "action": "supported cloth movement"
+        },
+        {
+          "at": 0.38,
+          "action": "slide into coffin"
+        },
+        {
+          "at": 1.79,
+          "action": "settles inside; no lid closure"
+        }
+      ],
+      "processing": "High/low pass, short fades, soft transient limiting, conservative level matching",
+      "duration": 2.5,
+      "peakDb": -14.586753024797828,
+      "rmsDb": -27.000267205381157,
+      "peak": 0.186492919921875,
+      "seamDelta": 0,
+      "sha256": "592060bd5921b829ed6c3e8c4bfdf9410c7df3771f7e9ae944711cddc035a5fb",
+      "file": "coffin-placement.wav"
+    }
+  ]
+}

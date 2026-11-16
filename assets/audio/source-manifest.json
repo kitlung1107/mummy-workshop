@@ -1,0 +1,158 @@
+[
+  {
+    "id": "bowl",
+    "page": "https://freesound.org/s/528894/",
+    "preview": "https://cdn.freesound.org/previews/528/528894_7623445-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "5E83D5BE7E9F5A608AC2BF0AE820EF3F3915B129BC66676E68F2078722897AE9",
+    "bytes": 203179,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "cloth",
+    "page": "https://freesound.org/s/650484/",
+    "preview": "https://cdn.freesound.org/previews/650/650484_1968629-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "82F57921BEE4897A2221C944C3B269C7A790EB2FD70F8555A5E03CF8AD78B02B",
+    "bytes": 351264,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "dum",
+    "page": "https://freesound.org/s/691749/",
+    "preview": "https://cdn.freesound.org/previews/691/691749_5309408-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "6DFB1ECAB6B4D336A1B257BF14E64C0AD4F37C90DEDD939E964406013FB7E389",
+    "bytes": 34962,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "ney",
+    "page": "https://freesound.org/s/115398/",
+    "preview": "https://cdn.freesound.org/previews/115/115398_43-hq.mp3",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "3B71C5F91D06BEF14B36C7031D3B538604822B0A6A69EFD5A77684CF19D6C127",
+    "bytes": 585739,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "oud-a",
+    "page": "https://freesound.org/s/172683/",
+    "preview": "https://cdn.freesound.org/previews/172/172683_3222989-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "E73C93138BF080CEFC84C2BB84518F5D6B65A4F882690676ECDA752AD088F1DA",
+    "bytes": 65592,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "oud-c",
+    "page": "https://freesound.org/s/172684/",
+    "preview": "https://cdn.freesound.org/previews/172/172684_3222989-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "F31486B36377B3A54F74373557F34684165DAB77FA4A44534176722021F73943",
+    "bytes": 37884,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "oud-g",
+    "page": "https://freesound.org/s/172682/",
+    "preview": "https://cdn.freesound.org/previews/172/172682_3222989-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "A2665D9AEA11AB178B906FF14F51A6B8B296123DA334D7EC2E5BCD4B690CB0A1",
+    "bytes": 35537,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "rice",
+    "page": "https://freesound.org/s/764991/",
+    "preview": "https://cdn.freesound.org/previews/764/764991_16536376-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "B6176318E01CC470C5B339F84489C961B90D7F730BC4200BF2DE4054010C87BA",
+    "bytes": 467760,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "slide",
+    "page": "https://freesound.org/s/848369/",
+    "preview": "https://cdn.freesound.org/previews/848/848369_10249017-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "F651D879993B67F4B1D35DD30DE568BBA5FB04999F9CAD3171FDEEEEB30D76A0",
+    "bytes": 204803,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "tek",
+    "page": "https://freesound.org/s/691753/",
+    "preview": "https://cdn.freesound.org/previews/691/691753_5309408-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "32F75D86676E3CA7FD9E27AF3D5B8873D4B490B84F7C1992486DBCC4BC49CE72",
+    "bytes": 24421,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "water",
+    "page": "https://freesound.org/s/274777/",
+    "preview": "https://cdn.freesound.org/previews/274/274777_3029356-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "22758CC2C4DAB9B28C7F694991244C0E0FB79A51CFB259CE205C839740300241",
+    "bytes": 62309,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "wood",
+    "page": "https://freesound.org/s/254343/",
+    "preview": "https://cdn.freesound.org/previews/254/254343_2727906-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "2F560186F7B00844B403F09D337EAC0A637EFFC525BC726AB3F00DA80B18171F",
+    "bytes": 1308720,
+    "format": "Public HQ MP3 preview; not original lossless download"
+  },
+  {
+    "id": "metal-tools",
+    "page": "https://freesound.org/people/DannWillis/sounds/761066/",
+    "preview": "https://cdn.freesound.org/previews/761/761066_8549938-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "D45F015D377EF1108C89DCEBDF9A5338F6B12A3D7665C602CB67FD9F6369F42E",
+    "format": "Public HQ MP3 preview, not original lossless master"
+  },
+  {
+    "id": "metal-tray",
+    "page": "https://freesound.org/people/Nickh69/sounds/472741/",
+    "preview": "https://cdn.freesound.org/previews/472/472741_7981740-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "4C6A0E36A012E96C9ACACDC235C59733346AAABAA42C9D6DBBB531819607A13B",
+    "format": "Public HQ MP3 preview, not original lossless master"
+  },
+  {
+    "id": "paper",
+    "page": "https://freesound.org/people/Mafon2/sounds/360646/",
+    "preview": "https://cdn.freesound.org/previews/360/360646_1196472-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "6160753A5438653DC67E5217CBF9782841880E479128AD9B93E3991263DF8372",
+    "format": "Public HQ MP3 preview, not original lossless master"
+  },
+  {
+    "id": "lotion",
+    "page": "https://freesound.org/people/wolfmagpie/sounds/740836/",
+    "preview": "https://cdn.freesound.org/previews/740/740836_14428703-hq.mp3",
+    "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+    "retrieved": "2026-11-16",
+    "sha256": "417E1C38E5B352403BFE8A310911D3A5D7CC4562E61438C6A4472F88BD106898",
+    "format": "Public HQ MP3 preview, not original lossless master"
+  }
+]

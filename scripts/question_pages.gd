@@ -110,7 +110,7 @@ static func _steps(game:Control,host:Control,small:bool=false)->void:
   panel.add_child(label);steps.add_child(panel)
 
 static func _navigation(game:Control,host:HBoxContainer,small:bool=false)->void:
- var prev=_button(game,"‹ 上一步",func():game.question-=1;game.render())
+ var prev=_button(game,"‹ 上一步",func():game.previous_question())
  prev.name="PreviousButton";prev.disabled=game.question==0
  prev.size_flags_horizontal=Control.SIZE_EXPAND_FILL;host.add_child(prev)
  if not small:

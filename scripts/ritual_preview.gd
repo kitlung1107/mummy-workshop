@@ -17,6 +17,9 @@ func new_attempt(show_instructions:bool=true)->void:
 
 func _process(_delta:float)->void:
  if page=="result" and is_instance_valid(ritual) and is_instance_valid(stage_dim):
+  if not finished and sound.revealing:
+   ritual.elapsed=sound.reveal_elapsed;ritual._pose()
+   if ritual.elapsed>=Ritual.DURATION:ritual._finish()
   var t=ritual.elapsed
   stage_dim.color.a=lerpf(.66,.93,smoothstep(0.0,.65,t))-smoothstep(2.7,4.6,t)*.15
 
@@ -32,11 +35,11 @@ func cartouche(b:Button,font_size:int=32)->void:
 
 func play_again()->void:
  if page!="result" or not finished or dialog_question>=0:return
- new_attempt();render()
+ new_attempt();sound.cue("restart");render()
 
 func go_home()->void:
  if page!="result" or not finished or dialog_question>=0:return
- new_attempt(false);render()
+ new_attempt(false);sound.cue("home-return");render()
 
 func render()->void:
  if page!="result":super.render();return
@@ -60,6 +63,7 @@ func render()->void:
   var tag=ResultPages.put_button(self,hotspots,"Hotspot%d"%i,Data.LABELS[i],Rect2(places[i],Vector2(220,80)),func():open_detail(i))
   cartouche(tag)
  ritual=Ritual.new();ritual.name="RitualLayer";ritual.position=PRESENTATION_ORIGIN;canvas.add_child(ritual);ritual.configure(subject);ritual.revealed.connect(_on_revealed)
+ ritual.set_process(false)
  result_actions=Control.new();result_actions.name="ResultActions";result_actions.mouse_filter=Control.MOUSE_FILTER_IGNORE;canvas.add_child(result_actions)
  cartouche(ResultPages.put_button(self,result_actions,"PlayAgain","再玩一次",Rect2(1270,715,285,66),play_again),27)
  cartouche(ResultPages.put_button(self,result_actions,"ResultHome","回到首頁",Rect2(1270,795,285,66),go_home),27)
@@ -69,8 +73,12 @@ func render()->void:
   ResultPages.put_button(self,canvas,"PreviewTools","審閱選項",Rect2(30,770,170,56),func():picker_open=not picker_open;render())
   ResultPages.put_label(self,canvas,"獨立雛形 · 組合 "+Data.code(answers),Rect2(30,838,330,35),18,MUTED)
  ResultPages.put_label(self,canvas,"點選五個部位標籤，查看你的選擇。",Rect2(470,849,680,34),19,MUTED).horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- if finished:ritual.skip()
- else:hotspots.visible=false;result_actions.visible=false
+ if finished:
+  ritual.skip();sound.set_scene("result")
+ else:
+  sound.begin_reveal(attempt_id)
+  ritual.elapsed=sound.reveal_elapsed;ritual._pose()
+  hotspots.visible=false;result_actions.visible=false
  if picker_open and review_mode:build_picker()
 
 func replay_ritual()->void:
@@ -78,6 +86,7 @@ func replay_ritual()->void:
  finished=false;hotspots.visible=false;result_actions.visible=false
  status_label.text="五個選擇，藏在同一具木乃伊之中。"
  ritual.play()
+ ritual.set_process(false);sound.begin_reveal(attempt_id,true)
 
 func skip_ritual()->void:
  if dialog_question>=0 or picker_open:return
@@ -86,6 +95,7 @@ func skip_ritual()->void:
 func _on_revealed()->void:
  finished=true;hotspots.visible=true;result_actions.visible=true
  status_label.text=""
+ sound.finish_reveal(attempt_id)
 
 func open_detail(index:int)->void:
  if not finished:return

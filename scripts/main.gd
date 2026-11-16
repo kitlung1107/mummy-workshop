@@ -23,6 +23,9 @@ var dialog_question = -1
 var restore_focus: Control
 var resize_pending = false
 var compact = false
+var attempt_id=0
+var rebuilding=false
+@onready var sound:Node=get_node("/root/GameAudio")
 
 func _ready() -> void:
  var theme_new = Theme.new()
@@ -83,6 +86,8 @@ func gap(height: float) -> Control:
  return c
 
 func new_attempt(show_instructions: bool = true) -> void:
+ attempt_id+=1
+ if is_instance_valid(sound):sound.reset_attempt(attempt_id)
  answers=[-1,-1,-1,-1,-1]
  question=0
  submitted=false
@@ -101,8 +106,10 @@ func _resized() -> void:
 func _deferred_resize() -> void:
  resize_pending=false
  var was_dialog=dialog_question
+ rebuilding=true
  render()
  if was_dialog>=0: open_detail(was_dialog)
+ rebuilding=false
 
 func clear_screen() -> void:
  dialog_question=-1
@@ -112,6 +119,7 @@ func clear_screen() -> void:
   child.queue_free()
 
 func render() -> void:
+ sound.set_scene(page)
  clear_screen()
  compact=size.x<640
  if page == "result":
@@ -182,12 +190,15 @@ func build_question() -> void:
 
 func choose(value: int) -> void:
  if page!="quiz" or submitted or value<0 or value>2:return
+ if answers[question]==value:return
+ sound.choice(question,value)
  answers[question]=value
  render()
 
 func next_question() -> void:
  if page!="quiz" or answers[question]<0:return
  if question<4:
+  sound.cue("page-turn")
   question+=1
   render()
  else:submit()
@@ -201,10 +212,31 @@ func submit() -> bool:
  return true
 
 func open_detail(index: int) -> void:
+ var before=dialog_question
  ResultPages.open_detail(self,index)
+ if before<0 and dialog_question>=0:
+  sound.set_ducked(true)
+  if not rebuilding:sound.cue("detail-open")
 
 func close_detail() -> void:
+ var before=dialog_question
  ResultPages.close_detail(self)
+ if before>=0 and dialog_question<0:
+  sound.set_ducked(false)
+  if not rebuilding:sound.cue("detail-close")
+
+func start_game()->void:
+ new_attempt();sound.cue("ui-tap");render()
+
+func accept_mission()->void:
+ sound.cue("mission");page="quiz";render()
+
+func entry_home()->void:
+ sound.cue("home-return");page="home";render()
+
+func previous_question()->void:
+ if page!="quiz" or question<=0 or submitted:return
+ sound.cue("page-turn");question-=1;render()
 
 func _unhandled_key_input(event: InputEvent) -> void:
  if dialog_question>=0 and event.is_action_pressed("ui_cancel"):

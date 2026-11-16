@@ -38,12 +38,12 @@ static func _illustrated(game: Control, page: String) -> void:
  frame.add_child(art)
  if page == "home":
   _hotspot(frame, "StartGame", "", Rect2(0.263,0.816,0.473,0.144),
-   func(): game.new_attempt(); game.render())
+   func(): game.start_game())
  else:
   _hotspot(frame, "AcceptMission", "", Rect2(0.326,0.86,0.422,0.121),
-   func(): game.page="quiz"; game.render())
+   func(): game.accept_mission())
   _hotspot(frame, "BackHome", "返回首頁", Rect2(0.018,0.018,0.072,0.084),
-   func(): game.page="home"; game.render())
+   func(): game.entry_home())
 
 static func _hotspot(frame: Control, id: String, caption: String, region: Rect2, action: Callable) -> void:
  var control := Button.new()
@@ -98,7 +98,7 @@ static func _compact_instructions(game: Control) -> void:
  stack.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  stack.add_theme_constant_override("separation",16)
  margins.add_child(stack)
- var back: Button=game.button("← 返回首頁",func(): game.page="home"; game.render())
+ var back: Button=game.button("← 返回首頁",func(): game.entry_home())
  back.name="BackHome"
  stack.add_child(back)
  var title: Label=game.label("遊戲玩法",34,Color("ffe0a0"))
@@ -126,6 +126,6 @@ static func _compact_instructions(game: Control) -> void:
   part.add_child(text)
   grid.add_child(part)
  stack.add_child(game.label(OUTCOME_COPY,21))
- var accept: Button=game.button("接受任務",func(): game.page="quiz"; game.render(),true)
+ var accept: Button=game.button("接受任務",func(): game.accept_mission(),true)
  accept.name="AcceptMission"
  stack.add_child(accept)
