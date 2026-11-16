@@ -72,7 +72,8 @@ func render()->void:
   ResultPages.put_button(self,canvas,"SkipRitual","跳過動畫",Rect2(30,685,190,56),skip_ritual)
   ResultPages.put_button(self,canvas,"PreviewTools","審閱選項",Rect2(30,770,170,56),func():picker_open=not picker_open;render())
   ResultPages.put_label(self,canvas,"獨立雛形 · 組合 "+Data.code(answers),Rect2(30,838,330,35),18,MUTED)
- ResultPages.put_label(self,canvas,"點選五個部位標籤，查看你的選擇。",Rect2(470,849,680,34),19,MUTED).horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ var hint=ResultPages.put_label(self,canvas,"點選五個部位標籤，查看你的選擇。",Rect2(470,849,680,34),19,MUTED)
+ hint.name="ResultHint";hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  if finished:
   ritual.skip();sound.set_scene("result")
  else:

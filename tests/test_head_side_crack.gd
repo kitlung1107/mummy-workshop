@@ -80,6 +80,7 @@ func run()->void:
   check(masked==54,"54 open-skull combinations retain complete gold mask")
   await click("ResultHome");check(game.page=="home","result returns home")
   await click("StartGame");check(game.page=="instructions","home starts instructions")
+  await create_timer(.51).timeout
   await click("AcceptMission");check(game.page=="quiz","instructions start quiz")
   for q in range(5):
    await click("Option%d"%(2 if q==0 else 0));await click("NextButton")
@@ -87,7 +88,7 @@ func run()->void:
   await create_timer(4.9).timeout
   check(game.finished and game.hotspots.visible,"natural coffin reveal completes")
   await click("Hotspot0");check(game.dialog_question==0,"brain explanation opens")
-  await click("ReturnMummy");check(game.dialog_question==-1,"explanation returns")
+  await click("CloseDetail");check(game.dialog_question==-1,"explanation returns")
   await click("PlayAgain");check(game.page=="instructions" and game.answers==[-1,-1,-1,-1,-1],"replay resets answers")
  game.hide()
  await contact_sheet()

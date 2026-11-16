@@ -50,6 +50,7 @@ func run() -> void:
   await click("StartGame")
   check(game.page=="instructions","home to instructions "+suffix)
   if viewport_size==sizes[0]:await screenshot("instructions-"+suffix)
+  await create_timer(.51).timeout
   await click("AcceptMission")
   check(game.page=="quiz" and game.question==0,"instructions to quiz "+suffix)
   var values=[0,1,2,1,0]

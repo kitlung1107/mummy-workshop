@@ -35,6 +35,7 @@ func run()->void:
  check(not game.submit(),"incomplete rejected")
  await click(game.find_child("StartGame",true,false))
  check(game.page=="instructions","home to instructions")
+ await create_timer(.51).timeout
  await click(game.find_child("AcceptMission",true,false))
  check(game.page=="quiz","instructions to quiz")
  for i in range(5):
@@ -88,7 +89,7 @@ func run()->void:
    check(hotspot.focus_mode==Control.FOCUS_NONE,code+" focus locked")
    game.open_detail((i+1)%5);check(game.dialog_question==i,code+" one modal only")
    if n in [0,121,242]:await shot("dialogs/%02d"%(i*3+values[i]+1))
-   if n%3==0:await click(game.find_child("ReturnMummy",true,false))
+   if n%3==0:await click(game.find_child("CloseDetail",true,false))
    elif n%3==1:await click(game.find_child("CloseDetail",true,false))
    else:
     var event=InputEventKey.new();event.keycode=KEY_ESCAPE;event.pressed=true;Input.parse_input_event(event);await settle()

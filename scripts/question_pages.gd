@@ -49,8 +49,7 @@ static func _button(game:Control,caption:String,action:Callable,primary:bool=fal
 
 static func _choose(game:Control,value:int)->void:
  game.choose(value)
- var replacement=game.find_child("Option%d"%value,true,false)
- if replacement:replacement.grab_focus.call_deferred()
+ game.request_option_focus(value)
 
 static func _option(game:Control,value:int,width:float,art_height:float,caption_height:float,small:bool=false)->Button:
  var chosen:bool=game.answers[game.question]==value

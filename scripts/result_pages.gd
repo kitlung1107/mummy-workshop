@@ -4,7 +4,9 @@ const ArtButton=preload("res://scripts/art_button.gd")
 const Mummy=preload("res://scripts/mummy_renderer.gd")
 const BACK=preload("res://assets/questions/workshop-background.png")
 const FILES=["01-brain-nasal-correct-v2.png","02-brain-oil-incorrect-v2.png","03-brain-skull-incorrect-v2.png","04-organs-heart-kept-correct-v2.png","05-organs-heart-removed-incorrect-v2.png","06-organs-all-kept-incorrect-v2.png","07-drying-natron-correct-v2.png","08-drying-water-incorrect-v2.png","09-drying-beer-incorrect-v2.png","10-wrapping-linen-correct-v2.png","11-wrapping-direct-linen-incorrect-v2.png","12-wrapping-papyrus-incorrect-v2.png","13-burial-mask-coffin-correct-v3.png","14-burial-beside-coffin-incorrect-v2.png","15-burial-no-mask-incorrect-v3.png"]
-const RETURN_RECTS=[
+# Source-only bounds of obsolete painted controls, covered with adjacent blank
+# parchment during rendering. Original illustrations and ornamental borders stay intact.
+const PAINTED_RETURN_RECTS=[
  Rect2(0.562200957,0.804463337,0.196770335,0.082890542),
  Rect2(0.562537403,0.804463337,0.196888091,0.082890542),
  Rect2(0.562200957,0.804463337,0.196770335,0.082890542),
@@ -92,7 +94,7 @@ static func build(game:Control)->void:
   egyptian_button(button)
   button.accessibility_description=Data.OPTIONS[i][game.answers[i]]
  var score_label=put_label(game,screen,"完成 %d / 5 題  ·  %d 分"%[Data.score(game.answers),Data.score(game.answers)*20],Rect2(38,32,310,48),25,game.CREAM)
- put_label(game,screen,"點選五個部位標籤，查看你的製作結果。",Rect2(515,850,700,38),22,game.CREAM)
+ put_label(game,screen,"點選五個部位標籤，查看你的製作結果。",Rect2(515,850,700,38),22,game.CREAM).name="ResultHint"
  var replay=put_button(game,screen,"Replay","再玩一次",Rect2(1260,706,280,72),func():game.new_attempt();game.render(),true)
  egyptian_button(replay,28)
  var home=put_button(game,screen,"ResultHome","回到首頁",Rect2(1260,790,280,72),func():game.page="home";game.render())
@@ -124,6 +126,8 @@ static func step(game:Control,amount:int)->void:
  game.answers=next;game.render()
 
 static func lock_background(game:Control,locked:bool)->void:
+ var hint=game.canvas.find_child("ResultHint",true,false)
+ if hint:hint.visible=not locked
  for node in game.canvas.find_children("*","BaseButton",true,false):
   node.focus_mode=Control.FOCUS_NONE if locked else Control.FOCUS_ALL
   node.mouse_filter=Control.MOUSE_FILTER_IGNORE if locked else Control.MOUSE_FILTER_STOP
@@ -138,30 +142,47 @@ static func open_detail(game:Control,index:int)->void:
  dim.gui_input.connect(func(event):
   if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed:
    game.get_viewport().set_input_as_handled();game.close_detail())
- var frame=Control.new();frame.name="DetailPanel";frame.position=game.canvas.position;frame.scale=game.canvas.scale;frame.size=Vector2(1600,900);frame.mouse_filter=Control.MOUSE_FILTER_IGNORE;layer.add_child(frame)
+ var frame=Control.new();frame.name="DetailPanel";frame.mouse_filter=Control.MOUSE_FILTER_IGNORE;layer.add_child(frame)
  var number=index*3+game.answers[index]
- var texture=load("res://assets/explanations/"+FILES[number]) as Texture2D
- var crop=AtlasTexture.new();crop.atlas=texture;crop.filter_clip=true
- crop.region=Rect2(texture.get_width()*.354,texture.get_height()*.087,texture.get_width()*.638,texture.get_height()*.836)
- var art=TextureRect.new();art.name="ExplanationArtwork";art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.texture=crop
- art.position=Vector2(580,90);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.size=Vector2(1004,743);art.stretch_mode=TextureRect.STRETCH_SCALE
+ var texture=game.detail_texture("res://assets/explanations/"+FILES[number]) as Texture2D
+ var source_size=texture.get_size()
+ var obsolete:Rect2=PAINTED_RETURN_RECTS[number]
+ var factor=1004.0/(source_size.x*.638)
+ frame.size=source_size*Vector2(.638,.836)*factor
+ var art=TextureRect.new();art.name="ExplanationArtwork";art.size=frame.size
+ art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.texture=texture
+ var material=ShaderMaterial.new();material.shader=preload("res://scripts/explanation_art.gdshader")
+ var cover=obsolete.grow_individual(.009,.009,.009,.010)
+ material.set_shader_parameter("removed_rect",Vector4(cover.position.x,cover.position.y,cover.size.x,cover.size.y))
+ art.material=material
  art.mouse_filter=Control.MOUSE_FILTER_STOP
  art.set_meta("question_id",index);art.set_meta("option_id",game.answers[index]);art.set_meta("source_file",FILES[number])
  art.accessibility_description=Data.OPTIONS[index][game.answers[index]]+"\n"+NOTES[index][game.answers[index]]
  frame.add_child(art)
- art.set_deferred("size",Vector2(1004,743))
- var relative:Rect2=RETURN_RECTS[number]
- var return_rect=Rect2(Vector2(580,90)+(relative.position-Vector2(.354,.087))/Vector2(.638,.836)*Vector2(1004,743),relative.size/Vector2(.638,.836)*Vector2(1004,743))
- for spec in [["CloseDetail",Rect2(1454,126,56,56)],["ReturnMummy",return_rect]]:
-  var button=ArtButton.new();button.name=spec[0];button.position=spec[1].position;button.size=spec[1].size
-  button.accessibility_name="關閉解說" if spec[0]=="CloseDetail" else "返回木乃伊"
-  button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
-  button.pressed.connect(game.close_detail);frame.add_child(button)
-  if spec[0]=="ReturnMummy":button.grab_focus()
- put_label(game,frame,"點彈窗外空白位置或按 Esc，也可關閉",Rect2(700,848,800,35),22,game.CREAM)
+ var button=ArtButton.new();button.name="CloseDetail"
+ button.position=Vector2((.926-.354)*source_size.x,(.155-.087)*source_size.y)*factor-Vector2(28,28)
+ button.size=Vector2(56,56);button.accessibility_name="關閉解說"
+ button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
+ button.pressed.connect(game.close_detail);frame.add_child(button)
+ # Only one modal control: Tab and Shift-Tab stay on the visible cross.
+ button.focus_neighbor_top=button.get_path();button.focus_neighbor_bottom=button.get_path()
+ button.focus_neighbor_left=button.get_path();button.focus_neighbor_right=button.get_path()
+ button.focus_next=button.get_path();button.focus_previous=button.get_path()
+ button.grab_focus()
+ var hint=put_label(game,frame,"點彈窗外空白位置或按 Esc，也可關閉",Rect2(0,frame.size.y+12,frame.size.x,35),22,game.CREAM)
+ hint.name="CloseHint";hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ layout_detail(game)
+
+static func layout_detail(game:Control)->void:
+ var frame=game.dialog_layer.get_node("DetailPanel") as Control
+ var zoom=minf(1.0,minf(maxf(1,game.size.x-32)/frame.size.x,maxf(1,game.size.y-112)/frame.size.y))
+ frame.scale=Vector2.ONE*zoom
+ frame.position=(game.size-frame.size*zoom)/2
 
 static func close_detail(game:Control)->void:
  if game.dialog_question<0:return
  game.remove_child(game.dialog_layer);game.dialog_layer.queue_free();game.dialog_layer=null;game.dialog_question=-1
  lock_background(game,false)
- if is_instance_valid(game.restore_focus):game.restore_focus.grab_focus()
+ if is_instance_valid(game.restore_focus) and game.restore_focus.is_inside_tree() and not game.restore_focus.is_queued_for_deletion():
+  game.restore_focus.grab_focus()
+ game.restore_focus=null

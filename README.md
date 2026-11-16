@@ -16,7 +16,9 @@ Windows 可執行 `Launch-Game.cmd`。啟動器會搜尋 `GODOT4` 環境變數�
 
 左側木乃伊組合亞麻布或紙草、面具、棺木位置及局部效果。保留腦部或內臟會顯示紫色氣味提示；清水與啤酒分別呈現不同濕痕；面具及包裹遮住身體時仍保留可見提示。移除心臟不會憑空增加腐敗效果，其宗教意義由解說呈現。
 
-點五個部位標籤或右側步驟，開啟所選方法的解說，同時只顯示一個視窗。按「返回木乃伊」、右上角關閉、視窗外空白或 Esc 可關閉；Tab／Enter 保留鍵盤操作。滑鼠不再顯示重複提示，返回按鈕使用貼合圖像的膠囊形點擊範圍，鍵盤焦點細線留在按鈕內。
+點五個部位標籤或右側步驟，開啟所選方法的置中解說，同時只顯示一個視窗。按右上角交叉、視窗外空白或 Esc 可關閉；Tab／Enter 保留鍵盤操作。已移除重複的「返回木乃伊」控制，其插圖外觀以同圖空白羊皮紙覆蓋，保留原有邊框及解說內容。開啟解說時隱藏背景提示，關閉後恢復。
+
+進入玩法頁後，首 0.5 秒內無法接受任務，避免首頁雙擊穿透。結果頁縮放只調整排版，保留開棺動畫進度及一次性揭曉事件。解說紋理僅在本次結果流程暫存，最多五張，返回首頁或開始新一局時清理。
 
 依 Lung 指定，遊戲文字統一使用「法魯王」，包括玩法及安葬圖解中的文字。首頁胸前布料由 imagegen 局部編輯，遊戲只顯示修補範圍，保留其餘原圖像素。十五款圖解與合成木乃伊使用已審閱的卡通插畫素材。
 
@@ -38,12 +40,13 @@ Windows 可執行 `Launch-Game.cmd`。啟動器會搜尋 `GODOT4` 環境變數�
 ```text
 godot --headless --editor --import --path .
 godot --headless --path . --script res://tests/test_session.gd
+godot --path . --audio-driver Dummy --script res://tests/test_ui_lifecycle.gd
 godot --path . --audio-driver Dummy --script res://tests/test_all.gd
 godot --path . --audio-driver Dummy --script res://tests/test_v3.gd
 godot --path . --audio-driver Dummy --script res://tests/test_final_render.gd
 ```
 
-測試涵蓋全部 243 組、1,215 次實際滑鼠開啟解說、選項映射、計分與重複提交、遮擋效果、十五款返回按鈕邊界、懸停、鍵盤導覽及桌面縮放；另以像素比較驗證首頁修補範圍外沒有變動。截圖和 JSON 報告寫入 `review/`，該目錄與執行日誌不提交到 Git。
+測試涵蓋全部 243 組、1,215 次實際滑鼠開啟解說、選項映射、計分與重複提交、遮擋效果、十五款關閉交叉、懸停、鍵盤導覽及桌面縮放；另以像素比較驗證首頁修補範圍外沒有變動。`test_ui_lifecycle.gd` 驗證 110 ms 雙擊與 500 ms 防連按、開棺中連續縮放、同幀重選及過期焦點、十五款解說在六種視窗尺寸的置中與關閉、五張 LRU 暫存及流程清理。截圖和 JSON 報告寫入 `review/`，該目錄與執行日誌不提交到 Git。
 
 ## 授權
 

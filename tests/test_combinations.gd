@@ -16,7 +16,8 @@ func click(control:Control)->void:
  var point=control.get_global_rect().get_center()
  for down in [true,false]:
   var event=InputEventMouseButton.new();event.button_index=MOUSE_BUTTON_LEFT;event.pressed=down;event.position=point;event.global_position=point
-  Input.parse_input_event(event);await process_frame
+  # Dispatch both halves to this viewport without a native mouse move between them.
+  root.push_input(event,true)
  await settle()
 func shot(path:String,only_mummy:bool=false)->void:
  if not capture:return
@@ -33,6 +34,7 @@ func run()->void:
  check(not game.submit(),"incomplete rejected")
  await click(game.find_child("StartGame",true,false))
  check(game.page=="instructions","home to instructions")
+ await create_timer(.51).timeout
  await click(game.find_child("AcceptMission",true,false))
  check(game.page=="quiz","instructions to quiz")
  for i in range(5):
@@ -74,11 +76,11 @@ func run()->void:
    check(hotspot.focus_mode==Control.FOCUS_NONE,code+" focus locked")
    game.open_detail((i+1)%5);check(game.dialog_question==i,code+" one modal only")
    if n in [0,121,242]:await shot("dialogs/%02d"%(i*3+values[i]+1))
-   if n%3==0:await click(game.find_child("ReturnMummy",true,false))
+   if n%3==0:await click(game.find_child("CloseDetail",true,false))
    elif n%3==1:await click(game.find_child("CloseDetail",true,false))
    else:
-    var event=InputEventKey.new();event.keycode=KEY_ESCAPE;event.pressed=true;Input.parse_input_event(event);await settle()
-    event=InputEventKey.new();event.keycode=KEY_ESCAPE;event.pressed=false;Input.parse_input_event(event)
+    var event=InputEventKey.new();event.keycode=KEY_ESCAPE;event.pressed=true;root.push_input(event,true);await settle()
+    event=InputEventKey.new();event.keycode=KEY_ESCAPE;event.pressed=false;root.push_input(event,true)
    check(game.dialog_question==-1,code+" close modal")
   if n%27==0:print("COMBINATIONS ",n+1,"/243")
  check(seen.size()==243,"all unique codes")

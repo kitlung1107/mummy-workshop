@@ -23,6 +23,12 @@ var dialog_question = -1
 var restore_focus: Control
 var resize_pending = false
 var compact = false
+const MISSION_DELAY_MSEC = 500
+const DETAIL_CACHE_LIMIT = 5
+var mission_ready_at = 0
+var screen_generation = 0
+var focus_request = 0
+var detail_textures: Dictionary = {}
 var attempt_id=0
 var rebuilding=false
 @onready var sound:Node=get_node("/root/GameAudio")
@@ -35,7 +41,8 @@ func _ready() -> void:
  theme_new.default_font.fallbacks=[cjk_fallback]
  theme_new.default_font_size = 20
  theme = theme_new
- get_viewport().size_changed.connect(_resized)
+ # The game area can resize independently beneath the audio toolbar.
+ resized.connect(_resized)
  new_attempt(false)
  render()
  if OS.get_cmdline_user_args().has("--review"):
@@ -86,6 +93,7 @@ func gap(height: float) -> Control:
  return c
 
 func new_attempt(show_instructions: bool = true) -> void:
+ detail_textures.clear()
  attempt_id+=1
  if is_instance_valid(sound):sound.reset_attempt(attempt_id)
  answers=[-1,-1,-1,-1,-1]
@@ -97,6 +105,32 @@ func new_attempt(show_instructions: bool = true) -> void:
   order.shuffle()
   orders.append(order)
  page="instructions" if show_instructions else "home"
+ mission_ready_at=Time.get_ticks_msec()+MISSION_DELAY_MSEC if show_instructions else 0
+
+func detail_texture(path: String) -> Texture2D:
+ # Per-result LRU: at most the five chosen explanations, including review mode.
+ var texture: Texture2D=detail_textures.get(path)
+ if texture:
+  detail_textures.erase(path)
+ else:
+  texture=load(path) as Texture2D
+ if texture:
+  detail_textures[path]=texture
+  while detail_textures.size()>DETAIL_CACHE_LIMIT:
+   detail_textures.erase(detail_textures.keys()[0])
+ return texture
+
+func request_option_focus(value: int) -> void:
+ focus_request+=1
+ _focus_option.call_deferred(screen_generation,focus_request,question,value)
+
+func _focus_option(generation: int, request: int, question_id: int, value: int) -> void:
+ if not is_inside_tree() or is_queued_for_deletion():return
+ if generation!=screen_generation or request!=focus_request:return
+ if page!="quiz" or submitted or question!=question_id or answers[question]!=value:return
+ var target=find_child("Option%d"%value,true,false) as Control
+ if is_instance_valid(target) and target.is_inside_tree() and not target.is_queued_for_deletion():
+  target.grab_focus()
 
 func _resized() -> void:
  if not resize_pending:
@@ -105,6 +139,14 @@ func _resized() -> void:
 
 func _deferred_resize() -> void:
  resize_pending=false
+ if not is_inside_tree():return
+ if page=="result" and is_instance_valid(canvas) and canvas.is_inside_tree():
+  # Preserve the live ritual, audio clock and modal; only layout changes.
+  var zoom=minf(size.x/1600.0,size.y/900.0)
+  canvas.scale=Vector2.ONE*zoom
+  canvas.position=(size-canvas.size*zoom)/2
+  if dialog_question>=0:ResultPages.layout_detail(self)
+  return
  var was_dialog=dialog_question
  rebuilding=true
  render()
@@ -112,6 +154,9 @@ func _deferred_resize() -> void:
  rebuilding=false
 
 func clear_screen() -> void:
+ screen_generation+=1
+ focus_request+=1
+ if page!="result":detail_textures.clear()
  dialog_question=-1
  dialog_layer=null
  for child in get_children():
@@ -182,7 +227,7 @@ func build_instructions() -> void:
  card.add_theme_stylebox_override("panel",panel_style(TEAL,Color("38616b")))
  root_box.add_child(card)
  card.add_child(label(Data.INSTRUCTIONS,21))
- root_box.add_child(button("開始作答  →",func(): page="quiz"; render(),true))
+ root_box.add_child(button("開始作答  →",accept_mission,true))
  root_box.add_child(button("返回首頁",func(): page="home"; render()))
 
 func build_question() -> void:
@@ -229,6 +274,7 @@ func start_game()->void:
  new_attempt();sound.cue("ui-tap");render()
 
 func accept_mission()->void:
+ if page!="instructions" or Time.get_ticks_msec()<mission_ready_at:return
  sound.cue("mission");page="quiz";render()
 
 func entry_home()->void:

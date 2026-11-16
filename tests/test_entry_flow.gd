@@ -58,6 +58,7 @@ func run() -> void:
   await click("BackHome")
   check(game.page=="home","back to home "+suffix)
   await click("StartGame")
+  await create_timer(.51).timeout
   await click("AcceptMission")
   check(game.page=="quiz" and game.question==0,"mission to question "+suffix)
   check(game.answers==[-1,-1,-1,-1,-1],"fresh answers "+suffix)
@@ -86,6 +87,7 @@ func run() -> void:
   await process_frame
  await settle()
  check(game.page=="instructions","keyboard Enter starts game")
+ await create_timer(.51).timeout
  await click("AcceptMission")
  for i in range(5):
   game.choose(0);game.next_question()

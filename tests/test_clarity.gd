@@ -72,7 +72,7 @@ func run()->void:
     if art:
      mapping[art.get_meta("source_file")]=true
      if n in [0,121,242]:await shot("explanation-%02d"%(q*3+a[q]+1))
-    await click(game.find_child("ReturnMummy",true,false))
+    await click(game.find_child("CloseDetail",true,false))
     check(game.dialog_question==-1,code+" return %d"%q)
     if game.dialog_question!=-1:game.close_detail();await settle()
   if n%27==0:print("CLARITY ",phase," ",n+1,"/243")

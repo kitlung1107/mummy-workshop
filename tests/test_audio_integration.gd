@@ -38,10 +38,14 @@ func run()->void:
  var home_position=sound.music_players[sound.music_slot].get_playback_position()
  game.start_game();await settle(.2)
  check(game.page=="instructions" and sound.stats.last_effect=="ui-tap","start gives one neutral cue")
+ var blocked_cues=sound.stats.effect_starts
+ game.accept_mission()
+ check(game.page=="instructions" and sound.stats.effect_starts==blocked_cues,"early mission blocked before audio cue")
  for i in range(12):game.render()
  await settle(.2)
  check(sound.stats.music_starts==1,"home to instructions and rerenders keep same music")
  check(sound.music_players[sound.music_slot].get_playback_position()>home_position,"home loop position advances instead of restarting")
+ while Time.get_ticks_msec()<game.mission_ready_at:await process_frame
  game.accept_mission();await settle(.2)
  check(game.page=="quiz" and sound.current_music=="loop-workshop","mission switches to workshop")
  check(sound.stats.music_starts==2,"one workshop transition")
@@ -79,7 +83,9 @@ func run()->void:
  check(not game.canvas.has_node("ReplayRitual") and not game.canvas.has_node("SkipRitual"),"no student replay or skip controls")
  await settle(1.1)
  var prior=sound.reveal_elapsed;var starts=sound.stats.reveal_audio_starts
+ var ritual_id=game.ritual.get_instance_id()
  game._deferred_resize();await process_frame
+ check(game.ritual.get_instance_id()==ritual_id,"resize preserves live ritual node")
  check(sound.reveal_elapsed>=prior and sound.reveal_elapsed<prior+.2,"resize preserves presentation clock")
  check(sound.stats.reveal_audio_starts==starts,"resize does not replay coffin audio")
  check(absf(game.ritual.elapsed-sound.reveal_elapsed)<.08,"visual and sound presentation clocks agree")
@@ -96,7 +102,11 @@ func run()->void:
  check(game.dialog_question==0 and sound.ducked,"detail opens and ducks music")
  cues=sound.stats.effect_starts;game.open_detail(1)
  check(sound.stats.effect_starts==cues and game.dialog_question==0,"one modal only and no duplicate cue")
+ var modal_id=game.dialog_layer.get_instance_id()
+ var texture_id=game.find_child("ExplanationArtwork",true,false).texture.get_instance_id()
  game._deferred_resize();await settle()
+ check(game.dialog_layer.get_instance_id()==modal_id,"modal resize keeps same dialog")
+ check(game.find_child("ExplanationArtwork",true,false).texture.get_instance_id()==texture_id,"modal resize keeps cached texture")
  check(game.dialog_question==0 and sound.stats.effect_starts==cues,"modal resize restores without replay")
  game.close_detail();await settle();game.close_detail()
  check(game.dialog_question==-1 and not sound.ducked,"close restores music")
@@ -109,6 +119,7 @@ func run()->void:
  check(capture_peak(capture)>0,"volume restoration resumes existing loop")
  var count=game.completion_records.size();game.play_again();await settle()
  check(game.page=="instructions" and game.answers==[-1,-1,-1,-1,-1],"play again resets only attempt")
+ check(game.detail_textures.is_empty(),"play again clears explanation cache with audio intact")
  check(game.completion_records.size()==count and sound.current_music=="loop-home","replay keeps records and returns home music")
  music_starts=sound.stats.music_starts;game.entry_home();await settle()
  check(game.page=="home" and sound.stats.music_starts==music_starts,"return home shares entry loop without restart")
@@ -130,4 +141,9 @@ func run()->void:
   root.size=Vector2i(1440,810);game.page="quiz";game.render();await settle(.2);await RenderingServer.frame_post_draw
   root.get_texture().get_image().save_png("res://review/audio-quiz.png")
  var report={"checks":checks,"failures":failures,"mixer_sample_counts":samples,"audible_peak":audible,"reveal_drift_seconds":drift,"audio_stats":sound.stats,"sizes":formats,"engine":Engine.get_version_info().string}
- FileAccess.open("res://review/audio-integration.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "));print(JSON.stringify(report));quit(0 if failures.is_empty() else 1)
+ FileAccess.open("res://review/audio-integration.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "));print(JSON.stringify(report))
+ sound.set_enabled(false)
+ for player in sound.music_players+sound.effect_players+[sound.reveal_player]:player.stop()
+ AudioServer.remove_bus_effect(0,0)
+ await settle(.2)
+ quit(0 if failures.is_empty() else 1)
