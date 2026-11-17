@@ -31,7 +31,9 @@ Windows 可執行 `Launch-Game.cmd`。啟動器會搜尋 `GODOT4` 環境變數�
 - `scripts/art_button.gd`：圖像按鈕點擊範圍與鍵盤焦點。
 - `assets/composite/`、`assets/explanations/`：目前結果系統使用的插畫。
 
-成績只保存在本次遊戲記憶體，沒有登入、Firestore、成績後端或網絡依賴。每答對一題得 20 分；組合試看不新增學生成績。
+桌面原生版的成績只保存在本次遊戲記憶體。探索館 Web 版須經[歷史探索館](https://kitlung1107.github.io/history-quest/?game=mummy-workshop)登入後遊玩；完成五題後由探索館核驗並保存場次，首次完成每答對一題派 20 幣，首次零分亦計作已完成，其後重玩只記錄不再派幣。組合試看不新增學生成績。
+
+2026-11-17 經擁有人授權及歷史內容／憑證審查後，原始碼庫改為公開。GitHub Pages 只部署 Godot 編譯成品，登入與派幣權限仍由探索館及 Firestore Rules 執行；公開檔案本身不是權限保護。Web 登入橋接測試為 `node tests/test_museum_bridge.cjs`。
 
 ## 驗證
 
