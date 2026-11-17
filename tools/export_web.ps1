@@ -15,6 +15,8 @@ try {
  }
  & $Godot --headless --path $projectRoot --export-release Web (Join-Path $destination 'index.html')
  if($LASTEXITCODE -ne 0){throw "Godot Web export failed ($LASTEXITCODE)"}
+ # The HTML shell requires both bridge scripts for every Web export.
+ Copy-Item -LiteralPath (Join-Path $projectRoot 'web\history-game-config.js'),(Join-Path $projectRoot 'web\history-game-bridge.js') -Destination $destination
  if(-not $QA){
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'preview.html') -Destination $destination
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'preview_server.mjs') -Destination (Join-Path $destination 'serve.mjs')
