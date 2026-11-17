@@ -7,18 +7,20 @@ const SHEETS=["res://assets/questions/visual/question-1.png","res://assets/quest
 const INK=Color("164d4e")
 const GOLD=Color("d5ac53")
 const PAPER=Color("fff6df")
+const REDRAWN_BRAIN_CARDS=["res://assets/questions/redrawn/brain-hook-v1.png","res://assets/questions/redrawn/brain-oil-v1.png","res://assets/questions/redrawn/brain-mallet-v1.png"]
+const COMPLETE_CARD=preload("res://assets/questions/redrawn/papyrus-card-v1.png")
 
 static func build(game:Control)->void:
  var background=TextureRect.new()
  background.texture=BACKGROUND
  background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  background.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
- background.modulate=Color("343e3c")
+ background.modulate=Color("343e3c") if game.size.y>=550 else Color("b6b5a5")
  background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  background.mouse_filter=Control.MOUSE_FILTER_IGNORE
  game.add_child(background)
- if game.size.x>=960 and game.size.y>=540:_wide(game)
- else:_compact(game)
+ if game.size.y>=550:_wide(game)
+ else:_landscape(game)
 
 static func _style(fill:Color,edge:Color,radius:int=14,width:int=2)->StyleBoxFlat:
  var style=StyleBoxFlat.new()
@@ -48,12 +50,15 @@ static func _button(game:Control,caption:String,action:Callable,primary:bool=fal
  return button
 
 static func _choose(game:Control,value:int)->void:
+ var scroll=game.find_child("QuestionScroll",true,false) as ScrollContainer
+ var offset=scroll.scroll_vertical if scroll else 0
  game.choose(value)
- game.request_option_focus(value)
+ game.request_option_focus(value,offset)
 
 static func _option(game:Control,value:int,width:float,art_height:float,caption_height:float,small:bool=false)->Button:
  var chosen:bool=game.answers[game.question]==value
  var card=Button.new()
+ card.mouse_filter=Control.MOUSE_FILTER_PASS
  card.name="Option%d"%value
  card.accessibility_name=Data.OPTIONS[game.question][value]
  card.accessibility_description="已選取" if chosen else "未選取"
@@ -86,9 +91,6 @@ static func _option(game:Control,value:int,width:float,art_height:float,caption_
  caption.mouse_filter=Control.MOUSE_FILTER_IGNORE
  caption.size_flags_vertical=Control.SIZE_EXPAND_FILL
  caption.add_theme_constant_override("separation",10);stack.add_child(caption)
- var marker=game.label("●" if chosen else "○",24,Color("a7f3e5") if chosen else Color("a17e3b"))
- marker.custom_minimum_size.x=34;marker.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- marker.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;caption.add_child(marker)
  var copy=game.label(Data.OPTIONS[game.question][value],21 if small else 25,PAPER if chosen else Color("382e21"))
  copy.name="OptionText";copy.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  copy.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;caption.add_child(copy)
@@ -138,9 +140,10 @@ static func _wide(game:Control)->void:
  _place(navigation,frame,Vector2(80,824),Vector2(1440,60));_navigation(game,navigation)
 
 static func _compact(game:Control)->void:
- var scroll=ScrollContainer.new();scroll.name="QuestionScroll"
+ var scroll=preload("res://scripts/touch_scroll.gd").new();scroll.name="QuestionScroll"
  scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;game.add_child(scroll)
+ scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.follow_focus=game.keyboard_navigation
+ scroll.offset_bottom=-84;game.add_child(scroll)
  var margin=MarginContainer.new();margin.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  for side in ["top","bottom","left","right"]:margin.add_theme_constant_override("margin_"+side,16)
  scroll.add_child(margin)
@@ -150,8 +153,84 @@ static func _compact(game:Control)->void:
  var heading=game.label(Data.LABELS[game.question],34,PAPER);heading.name="QuestionHeading";stack.add_child(heading)
  var prompt=game.label(Data.QUESTIONS[game.question],22,PAPER);prompt.name="QuestionPrompt";stack.add_child(prompt)
  var art_height:float=minf(380,maxf(240,game.size.x-48))
+ var option_host:Container=stack
+ var columns=game.size.x>=720
+ if columns:
+  var row=HBoxContainer.new();row.add_theme_constant_override("separation",12);stack.add_child(row);option_host=row
+  art_height=clampf(game.size.y-320,120,240)
  for value in game.orders[game.question]:
-  var card=_option(game,value,240,art_height,100,true)
-  card.size_flags_horizontal=Control.SIZE_EXPAND_FILL;stack.add_child(card)
+  var card=_option(game,value,220 if columns else 240,art_height,100,true)
+  if columns:card.find_child("OptionText",true,false).add_theme_font_size_override("font_size",18)
+  card.size_flags_horizontal=Control.SIZE_EXPAND_FILL;option_host.add_child(card)
  var navigation=HBoxContainer.new();navigation.add_theme_constant_override("separation",12)
- stack.add_child(navigation);_navigation(game,navigation,true)
+ game.add_child(navigation)
+ navigation.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+ navigation.offset_left=16;navigation.offset_right=-16;navigation.offset_top=-72;navigation.offset_bottom=-12
+ _navigation(game,navigation,true)
+
+static func _landscape(game:Control)->void:
+ var ui=preload("res://scripts/egyptian_ui.gd")
+ var w=game.size.x
+ var h=game.size.y
+ var pad=12.0
+ ui.panel(game,Rect2(4,2,w-8,52),true)
+ var heading=game.label("%02d / 05  ·  %s"%[game.question+1,Data.LABELS[game.question]],15,Color("edcc82"))
+ heading.name="QuestionHeading";_place(heading,game,Vector2(64,6),Vector2(132,40))
+ heading.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ var prompt=game.label(Data.QUESTIONS[game.question],20,Color("fff1ca"))
+ prompt.name="QuestionPrompt";_place(prompt,game,Vector2(216,6),Vector2(w-248,40))
+ prompt.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ var card_y=61.0
+ var card_h=h-card_y-57
+ var card_w=(w-pad*2-20)/3
+ for i in range(3):
+  var value:int=game.orders[game.question][i]
+  var card=_complete_landscape_card(game,value,Vector2(card_w,card_h))
+  _place(card,game,Vector2(pad+i*(card_w+10),card_y),Vector2(card_w,card_h))
+ var nav=HBoxContainer.new();nav.add_theme_constant_override("separation",14)
+ _place(nav,game,Vector2(pad,h-50),Vector2(w-24,46));_navigation(game,nav,true)
+ for b in nav.get_children():
+  b.custom_minimum_size.y=44;ui.button(b,17)
+
+static func _complete_landscape_card(game:Control,value:int,dimensions:Vector2)->Button:
+ var chosen:bool=game.answers[game.question]==value
+ var card=Button.new();card.name="Option%d"%value
+ card.custom_minimum_size=dimensions;card.mouse_filter=Control.MOUSE_FILTER_PASS
+ card.accessibility_name=Data.OPTIONS[game.question][value]
+ card.accessibility_description="已選擇" if chosen else "未選擇"
+ card.set_meta("option_id",value);card.set_meta("question_id",game.question)
+ card.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
+ card.pressed.connect(func():_choose(game,value))
+ for state in ["normal","hover","pressed"]:card.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ card.add_theme_stylebox_override("focus",_style(Color.TRANSPARENT,Color("fff0bd"),12,2))
+ var texture:Texture2D=load(REDRAWN_BRAIN_CARDS[value]) if game.question==0 else COMPLETE_CARD
+ var scale_factor=minf(dimensions.x/texture.get_width(),dimensions.y/texture.get_height())
+ var painted_size=texture.get_size()*scale_factor
+ var inset=(dimensions-painted_size)*.5
+ var background=TextureRect.new();background.name="OptionArtwork" if game.question==0 else "CompleteCardBackground"
+ background.texture=texture;background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+ background.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+ background.position=inset;background.size=painted_size;background.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ background.set_meta("whole_card",true);background.set_meta("option_id",value);background.set_meta("question_id",game.question)
+ if chosen:background.modulate=Color(1.12,1.06,.74)
+ card.add_child(background)
+ # The three brain options are complete individual paintings: no atlas or nine-patch.
+ # Other questions retain their original complete square illustrations inside a new whole frame.
+ if game.question>0:
+  var picture=TextureRect.new();picture.name="OptionArtwork"
+  var sheet:Texture2D=load(SHEETS[game.question]);var atlas=AtlasTexture.new();atlas.atlas=sheet
+  atlas.region=Rect2(value*sheet.get_width()/3.0,0,sheet.get_width()/3.0,sheet.get_height())
+  picture.texture=atlas;picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+  picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+  picture.position=inset+painted_size*Vector2(.18,.06);picture.size=painted_size*Vector2(.64,.66)
+  picture.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  picture.set_meta("option_id",value);picture.set_meta("question_id",game.question);card.add_child(picture)
+ var copy=game.label(Data.OPTIONS[game.question][value],16,Color("382e21"));copy.name="OptionText"
+ copy.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;copy.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ copy.position=inset+painted_size*Vector2(.18,.73);copy.size=painted_size*Vector2(.64,.21);card.add_child(copy)
+ if chosen:
+  var selected=StyleBoxFlat.new();selected.bg_color=Color.TRANSPARENT;selected.border_color=Color("ffd36a")
+  selected.set_border_width_all(3);selected.set_corner_radius_all(12)
+  var ring=Panel.new();ring.name="SelectedYellowBorder";ring.add_theme_stylebox_override("panel",selected)
+  ring.position=inset;ring.size=painted_size;ring.mouse_filter=Control.MOUSE_FILTER_IGNORE;card.add_child(ring)
+ return card

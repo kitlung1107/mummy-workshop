@@ -119,7 +119,8 @@ func configure(selected:Array)->void:
   art(body,"GoldMask",Rect2(1206,50,286,264),Rect2(body_point(Vector2(32,8 if rules.head_notch else -6)),Vector2(144,134)*body_art.size/BODY_FRAME))
  effects=Control.new();effects.name="Atmosphere";effects.mouse_filter=Control.MOUSE_FILTER_IGNORE;effects.size=size;body.add_child(effects)
  # User review: no external odor waves, haze or plumes.
- anchors=[body.position+body_point(Vector2(102,65)),body.position+body_point(Vector2(112,240)),body.position+body_point(Vector2(118,355)),body.position+body_point(Vector2(114,620)),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
+ # Brain callout ends at the upper-left forehead, above and left of the mask nose.
+ anchors=[body.position+body_point(Vector2(80,18)),body.position+body_point(Vector2(112,240)),body.position+body_point(Vector2(118,355)),body.position+body_point(Vector2(114,620)),coffin_rect.position+Vector2(coffin_rect.size.x*.12,coffin_rect.size.y*.78)]
  if is_instance_valid(effects):effects.queue_redraw()
 
 func add_vapor(rect:Rect2,strength:float)->void:

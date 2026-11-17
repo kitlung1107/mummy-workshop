@@ -27,7 +27,12 @@ window/size/window_width_override=1440
 window/size/window_height_override=810
 window/handheld/orientation=6
 
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
 [rendering]
+textures/vram_compression/import_etc2_astc=true
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

@@ -8,7 +8,7 @@
 
 Windows 可執行 `Launch-Game.cmd`。啟動器會搜尋 `GODOT4` 環境變數指定的執行檔、相鄰 `runtime` 目錄、桌面及 PATH。找不到引擎時可直接使用 Godot 編輯器。`Launch-243-Review.cmd` 可直達結果頁，再按「243 組合試看」切換選項。
 
-此版本以桌面試玩為驗證範圍，未重新優化手機或 iPad，沒有提供新的 Web 匯出包。
+手機版採用已選定的「11/17 選項完整重畫」版本：手機及 iPad 直向提示轉橫，iPad 橫向保留桌面風格。可用 `tools/export_web.ps1` 匯出 Web 版本，再以 `node tools/preview_server.mjs build/web 8765` 開啟本機預覽。素材範圍、測試及操作見 [版本紀錄](docs/approved-phone-preview-20261117.md)；目前驗證為尺寸模擬，尚非手機或 iPad 真機測試。
 
 ## 遊玩與結果
 

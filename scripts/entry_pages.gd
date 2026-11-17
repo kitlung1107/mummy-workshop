@@ -11,8 +11,8 @@ static func build(game: Control, page: String) -> void:
  background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  background.mouse_filter = Control.MOUSE_FILTER_IGNORE
  game.add_child(background)
- if page == "instructions" and (game.size.x < 720 or game.size.y < 500):
-  _compact_instructions(game)
+ if page == "instructions" and game.size.y < 550:
+  _landscape_instructions(game)
  else:
   _illustrated(game, page)
 
@@ -84,10 +84,12 @@ static func _compact_instructions(game: Control) -> void:
  backdrop.modulate=Color(0.28,0.32,0.30)
  backdrop.mouse_filter=Control.MOUSE_FILTER_IGNORE
  game.add_child(backdrop)
- var scroll := ScrollContainer.new()
+ var scroll := preload("res://scripts/touch_scroll.gd").new()
  scroll.name="EntryScroll"
  scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+ scroll.follow_focus=game.keyboard_navigation
+ scroll.offset_bottom=-76
  game.add_child(scroll)
  var margins := MarginContainer.new()
  margins.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -112,7 +114,7 @@ static func _compact_instructions(game: Control) -> void:
  panel.add_child(copy)
  stack.add_child(game.label("以下五個部分，由你決定怎樣處理。",21))
  var grid := GridContainer.new()
- grid.columns=2 if game.size.x<480 else 5
+ grid.columns=2 if game.size.x<720 else 5
  grid.add_theme_constant_override("h_separation",10)
  grid.add_theme_constant_override("v_separation",10)
  stack.add_child(grid)
@@ -128,4 +130,52 @@ static func _compact_instructions(game: Control) -> void:
  stack.add_child(game.label(OUTCOME_COPY,21))
  var accept: Button=game.button("接受任務",func(): game.accept_mission(),true)
  accept.name="AcceptMission"
- stack.add_child(accept)
+ game.add_child(accept)
+ accept.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+ accept.offset_left=18;accept.offset_right=-18;accept.offset_top=-64;accept.offset_bottom=-10
+
+static func _landscape_instructions(game:Control)->void:
+ # Newly painted complete landscape composition. No atlas crops or UI collage.
+ var w=game.size.x
+ var h=game.size.y
+ var background=TextureRect.new()
+ background.name="RedrawnMissionArtwork"
+ background.texture=preload("res://assets/entry/mission-landscape-redrawn-v1.png")
+ background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+ background.stretch_mode=TextureRect.STRETCH_SCALE
+ background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ background.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.add_child(background)
+ var x=w*.30
+ var width=w*.69
+ var title=game.label("你的任務",23,Color("68411e"))
+ title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ title.position=Vector2(x+20,h*.06);title.size=Vector2(width-40,30);game.add_child(title)
+ var copy=game.label("你是一位古埃及防腐師。\n王室交給你一項重要任務：為法魯王製作木乃伊。",18,Color("3e2b1b"))
+ copy.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ copy.position=Vector2(x+26,h*.16);copy.size=Vector2(width-52,60);game.add_child(copy)
+ # Five new pictograms are painted into the new scene. Live labels stay crisp.
+ var centers=[.410,.525,.640,.755,.870]
+ var labels=["腦部","內臟","脫水","包裹","安葬"]
+ for i in range(5):
+  var label=game.label("%02d  %s"%[i+1,labels[i]],15,Color("51371f"))
+  label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+  label.position=Vector2(w*centers[i]-w*.052,h*.57);label.size=Vector2(w*.104,24);game.add_child(label)
+ var outcome=game.label("每個部分選一種做法。\n完成後，看看你製作的木乃伊會變成甚麼模樣！",16,Color("51371f"))
+ outcome.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ outcome.position=Vector2(x+22,h*.65);outcome.size=Vector2(width-44,52);game.add_child(outcome)
+ # Transparent native controls align with the two newly painted buttons.
+ for i in range(2):
+  var b=Button.new();b.name="BackHome" if i==0 else "AcceptMission"
+  b.text="返回首頁" if i==0 else "接受任務  ›"
+  b.accessibility_name=b.text;b.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
+  b.position=Vector2(w*(.326 if i==0 else .562),h*.805)
+  b.size=Vector2(w*(.222 if i==0 else .393),h*.139)
+  b.custom_minimum_size.y=44
+  b.add_theme_font_size_override("font_size",17 if i==0 else 20)
+  for state in ["normal","hover","pressed"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+  for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:b.add_theme_color_override(state,Color("fff0bd"))
+  var focus=StyleBoxFlat.new();focus.bg_color=Color.TRANSPARENT;focus.border_color=Color("fff1bd");focus.set_border_width_all(2);focus.set_corner_radius_all(20)
+  b.add_theme_stylebox_override("focus",focus)
+  if i==0:b.pressed.connect(func():game.entry_home())
+  else:b.pressed.connect(func():game.accept_mission())
+  game.add_child(b)

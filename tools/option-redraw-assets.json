@@ -1,0 +1,30 @@
+[
+  {
+    "file": "assets/questions/redrawn/brain-hook-v1.png",
+    "width": 1341,
+    "height": 1173,
+    "bytes": 2808013,
+    "sha256": "be7ecf1ff33066dbbf74966cd34db1fe27ea1f652277b7861d56057c916204c1"
+  },
+  {
+    "file": "assets/questions/redrawn/brain-oil-v1.png",
+    "width": 1340,
+    "height": 1174,
+    "bytes": 2601104,
+    "sha256": "2a2e4e7cebcd3b7e1aea27a02cc22b0df93c43618ab644802812a2322040e792"
+  },
+  {
+    "file": "assets/questions/redrawn/brain-mallet-v1.png",
+    "width": 1341,
+    "height": 1173,
+    "bytes": 2697091,
+    "sha256": "1fcfb0ec5718a648a68af0d8cc74f93af98042609b93ff3222a160567f5a29c1"
+  },
+  {
+    "file": "assets/questions/redrawn/papyrus-card-v1.png",
+    "width": 1341,
+    "height": 1173,
+    "bytes": 2361071,
+    "sha256": "78dc6767e3d1249e4ab4f749237ade0ccff20cdaee78044c96f7f2e07b57ba5b"
+  }
+]

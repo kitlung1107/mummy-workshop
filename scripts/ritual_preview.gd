@@ -10,6 +10,8 @@ var picker_open=false
 var finished=false
 var stage_dim:ColorRect
 var result_actions:Control
+var subject:Control
+var result_title:Label
 
 func new_attempt(show_instructions:bool=true)->void:
  finished=false
@@ -51,15 +53,14 @@ func render()->void:
  canvas=Control.new();canvas.name="ResultCanvas";canvas.size=Vector2(1600,900)
  var zoom=minf(size.x/1600.0,size.y/900.0)
  canvas.scale=Vector2.ONE*zoom;canvas.position=(size-canvas.size*zoom)/2;add_child(canvas);stage=canvas
- var title_node=ResultPages.put_label(self,canvas,"木乃伊工房  /  法魯王的揭曉時刻",Rect2(300,20,1000,58),34,CREAM);title_node.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ result_title=ResultPages.put_label(self,canvas,"木乃伊工房  /  法魯王的揭曉時刻",Rect2(300,20,1000,58),34,CREAM);result_title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  status_label=ResultPages.put_label(self,canvas,"五個選擇，藏在同一具木乃伊之中。",Rect2(400,77,800,35),20,GOLD);status_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- var subject=renderer_script.new();subject.position=PRESENTATION_ORIGIN;canvas.add_child(subject);subject.configure(answers)
+ subject=renderer_script.new();subject.position=PRESENTATION_ORIGIN;canvas.add_child(subject);subject.configure(answers)
  hotspots=Control.new();hotspots.name="FiveHotspots";hotspots.mouse_filter=Control.MOUSE_FILTER_IGNORE;canvas.add_child(hotspots)
  var places=[Vector2(330,180),Vector2(1100,315),Vector2(330,475),Vector2(1100,620),Vector2(330,740)]
  for i in range(5):
   var from=places[i]+Vector2(110,40);var to=PRESENTATION_ORIGIN+subject.anchors[i]
-  var wire=Line2D.new();wire.points=PackedVector2Array([from,to]);wire.width=2;wire.default_color=Color("cfa760");hotspots.add_child(wire)
-  var dot=Polygon2D.new();dot.polygon=PackedVector2Array([to+Vector2(0,-5),to+Vector2(5,0),to+Vector2(0,5),to+Vector2(-5,0)]);dot.color=GOLD;hotspots.add_child(dot)
+  var wire=preload("res://scripts/result_wire.gd").new();wire.configure(from,to);hotspots.add_child(wire)
   var tag=ResultPages.put_button(self,hotspots,"Hotspot%d"%i,Data.LABELS[i],Rect2(places[i],Vector2(220,80)),func():open_detail(i))
   cartouche(tag)
  ritual=Ritual.new();ritual.name="RitualLayer";ritual.position=PRESENTATION_ORIGIN;canvas.add_child(ritual);ritual.configure(subject);ritual.revealed.connect(_on_revealed)
@@ -81,6 +82,61 @@ func render()->void:
   ritual.elapsed=sound.reveal_elapsed;ritual._pose()
   hotspots.visible=false;result_actions.visible=false
  if picker_open and review_mode:build_picker()
+ layout_result()
+
+func layout_result()->void:
+ if not is_instance_valid(ritual):return
+ var narrow=size.x<960 or size.y<600
+ var hint=canvas.get_node("ResultHint") as Label
+ hint.visible=finished and dialog_question<0
+ for child in hotspots.get_children():
+  if child.has_meta("result_wire"):child.visible=true
+ if not narrow:
+  canvas.size=Vector2(1600,900);super.layout_result()
+  subject.position=PRESENTATION_ORIGIN;subject.scale=Vector2.ONE
+  ritual.position=PRESENTATION_ORIGIN;ritual.scale=Vector2.ONE
+  result_title.position=Vector2(300,20);result_title.size=Vector2(1000,58);result_title.add_theme_font_size_override("font_size",34)
+  status_label.position=Vector2(400,77);status_label.size=Vector2(800,35);status_label.add_theme_font_size_override("font_size",20)
+  var places=[Vector2(330,180),Vector2(1100,315),Vector2(330,475),Vector2(1100,620),Vector2(330,740)]
+  for i in range(5):
+   var tag=hotspots.get_node("Hotspot%d"%i);cartouche(tag);tag.position=places[i];tag.size=Vector2(220,80)
+  for i in range(2):
+   var action=result_actions.get_child(i);cartouche(action,27);action.position=Vector2(1270,715+i*80);action.size=Vector2(285,maxf(66,44/canvas.scale.y))
+  hint.position=Vector2(470,849);hint.size=Vector2(680,34);hint.add_theme_font_size_override("font_size",19)
+  _layout_wires()
+  return
+ # Landscape phone: centered mummy with five part labels, no side panel/grid.
+ canvas.scale=Vector2.ONE;canvas.position=Vector2.ZERO;canvas.size=size
+ result_title.position=Vector2(8,4);result_title.size=Vector2(size.x-16,26);result_title.add_theme_font_size_override("font_size",18)
+ status_label.position=Vector2(8,32);status_label.size=Vector2(size.x-16,24);status_label.add_theme_font_size_override("font_size",14)
+ hint.position=status_label.position;hint.size=status_label.size;hint.add_theme_font_size_override("font_size",14)
+ var zoom=minf(size.x*.38/580.0,(size.y-66)/740.0)
+ var origin=Vector2((size.x-580*zoom)/2,60)
+ subject.position=origin;subject.scale=Vector2.ONE*zoom
+ ritual.position=origin;ritual.scale=Vector2.ONE*zoom
+ var tag_width=minf(150,size.x*.23)
+ var left=size.x*.08
+ var right=size.x-left-tag_width
+ var places=[Vector2(left,70),Vector2(right,105),Vector2(left,150),Vector2(right,185),Vector2(left,230)]
+ for i in range(5):
+  var tag=hotspots.get_node("Hotspot%d"%i)
+  cartouche(tag,18)
+  tag.custom_minimum_size.y=44;tag.position=places[i]
+  tag.size=Vector2(tag_width,48)
+ for i in range(2):
+  var action=result_actions.get_child(i);action.custom_minimum_size.y=44
+  cartouche(action,16);action.position=Vector2(right,244+i*48);action.size=Vector2(tag_width,44)
+ _layout_wires()
+
+func _layout_wires()->void:
+ var index=0
+ for child in hotspots.get_children():
+  if not child.has_meta("result_wire"):continue
+  var tag=hotspots.get_node("Hotspot%d"%index) as Control
+  var end=subject.position+subject.anchors[index]*subject.scale
+  var from=tag.position+Vector2(tag.size.x if tag.position.x<subject.position.x else 0,tag.size.y/2)
+  child.configure(from,end)
+  index+=1
 
 func replay_ritual()->void:
  if dialog_question>=0 or picker_open:return
@@ -96,6 +152,7 @@ func skip_ritual()->void:
 func _on_revealed()->void:
  finished=true;hotspots.visible=true;result_actions.visible=true
  status_label.text=""
+ layout_result()
  sound.finish_reveal(attempt_id)
 
 func open_detail(index:int)->void:

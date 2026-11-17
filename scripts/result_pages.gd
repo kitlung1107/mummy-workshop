@@ -143,12 +143,15 @@ static func open_detail(game:Control,index:int)->void:
   if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed:
    game.get_viewport().set_input_as_handled();game.close_detail())
  var frame=Control.new();frame.name="DetailPanel";frame.mouse_filter=Control.MOUSE_FILTER_IGNORE;layer.add_child(frame)
+ var backdrop=Panel.new();backdrop.name="DetailBackdrop";backdrop.mouse_filter=Control.MOUSE_FILTER_STOP
+ backdrop.add_theme_stylebox_override("panel",game.panel_style(Color("103e49"),game.GOLD,14));frame.add_child(backdrop)
  var number=index*3+game.answers[index]
  var texture=game.detail_texture("res://assets/explanations/"+FILES[number]) as Texture2D
  var source_size=texture.get_size()
  var obsolete:Rect2=PAINTED_RETURN_RECTS[number]
  var factor=1004.0/(source_size.x*.638)
  frame.size=source_size*Vector2(.638,.836)*factor
+ frame.set_meta("natural_size",frame.size)
  var art=TextureRect.new();art.name="ExplanationArtwork";art.size=frame.size
  art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.texture=texture
  var material=ShaderMaterial.new();material.shader=preload("res://scripts/explanation_art.gdshader")
@@ -162,6 +165,7 @@ static func open_detail(game:Control,index:int)->void:
  var button=ArtButton.new();button.name="CloseDetail"
  button.position=Vector2((.926-.354)*source_size.x,(.155-.087)*source_size.y)*factor-Vector2(28,28)
  button.size=Vector2(56,56);button.accessibility_name="關閉解說"
+ button.set_meta("natural_position",button.position)
  button.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
  button.pressed.connect(game.close_detail);frame.add_child(button)
  # Only one modal control: Tab and Shift-Tab stay on the visible cross.
@@ -171,14 +175,32 @@ static func open_detail(game:Control,index:int)->void:
  button.grab_focus()
  var hint=put_label(game,frame,"點彈窗外空白位置或按 Esc，也可關閉",Rect2(0,frame.size.y+12,frame.size.x,35),22,game.CREAM)
  hint.name="CloseHint";hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ var readable=put_label(game,frame,Data.OPTIONS[index][game.answers[index]]+"\n\n"+NOTES[index][game.answers[index]],Rect2(),20,game.CREAM)
+ readable.name="ReadableExplanation";readable.visible=false
  layout_detail(game)
 
 static func layout_detail(game:Control)->void:
  var frame=game.dialog_layer.get_node("DetailPanel") as Control
- var zoom=minf(1.0,minf(maxf(1,game.size.x-32)/frame.size.x,maxf(1,game.size.y-112)/frame.size.y))
+ var natural:Vector2=frame.get_meta("natural_size")
+ var art=frame.get_node("ExplanationArtwork") as Control
+ var close=frame.get_node("CloseDetail") as Button
+ var hint=frame.get_node("CloseHint") as Label
+ # The illustration already contains all copy and one painted close button.
+ # Never add a second cross or a duplicate blue explanation card.
+ frame.get_node("DetailBackdrop").hide()
+ frame.get_node("ReadableExplanation").hide()
+ frame.size=natural;art.position=Vector2.ZERO;art.size=natural
+ var margin=36.0 if game.size.y<550 else 84.0
+ var zoom=minf(1.0,minf(maxf(1,game.size.x-24)/natural.x,maxf(1,game.size.y-margin)/natural.y))
  frame.scale=Vector2.ONE*zoom
- frame.position=(game.size-frame.size*zoom)/2
-
+ var target=maxf(56,44/zoom)
+ close.size=Vector2.ONE*target;close.position=close.get_meta("natural_position")+Vector2(28,28)-close.size/2
+ close.text=""
+ for state in ["normal","hover","pressed","focus"]:close.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ hint.position=Vector2(0,natural.y+8);hint.size=Vector2(natural.x,35)
+ hint.add_theme_font_size_override("font_size",18)
+ hint.visible=game.size.y>=550
+ frame.position=(game.size-frame.size*frame.scale)/2
 static func close_detail(game:Control)->void:
  if game.dialog_question<0:return
  game.remove_child(game.dialog_layer);game.dialog_layer.queue_free();game.dialog_layer=null;game.dialog_question=-1

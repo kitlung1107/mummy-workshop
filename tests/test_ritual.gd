@@ -6,6 +6,7 @@ func check(ok:bool,message:String)->void:
  if not ok:failures.append(message);push_error(message)
 func _initialize()->void:run.call_deferred()
 func run()->void:
+ root.size=Vector2i(1600,900) # These assertions describe the desktop artwork layout.
  var scene=load("res://ritual.tscn").instantiate()
  root.add_child(scene)
  await process_frame

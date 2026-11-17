@@ -31,6 +31,7 @@ var focus_request = 0
 var detail_textures: Dictionary = {}
 var attempt_id=0
 var rebuilding=false
+var keyboard_navigation=false
 @onready var sound:Node=get_node("/root/GameAudio")
 
 func _ready() -> void:
@@ -38,7 +39,7 @@ func _ready() -> void:
  theme_new.default_font = load("res://assets/chinese.ttf")
  var cjk_fallback=SystemFont.new()
  cjk_fallback.font_names=PackedStringArray(["Noto Sans CJK TC","Microsoft JhengHei","PingFang TC"])
- theme_new.default_font.fallbacks=[cjk_fallback]
+ theme_new.default_font.fallbacks=[load("res://assets/fonts/NotoSansCJKtc-Regular.otf"),cjk_fallback]
  theme_new.default_font_size = 20
  theme = theme_new
  # The game area can resize independently beneath the audio toolbar.
@@ -120,17 +121,27 @@ func detail_texture(path: String) -> Texture2D:
    detail_textures.erase(detail_textures.keys()[0])
  return texture
 
-func request_option_focus(value: int) -> void:
+func request_option_focus(value: int, scroll_position:int=0) -> void:
  focus_request+=1
- _focus_option.call_deferred(screen_generation,focus_request,question,value)
+ _focus_option.call_deferred(screen_generation,focus_request,question,value,scroll_position)
 
-func _focus_option(generation: int, request: int, question_id: int, value: int) -> void:
+func _focus_option(generation: int, request: int, question_id: int, value: int, scroll_position:int) -> void:
  if not is_inside_tree() or is_queued_for_deletion():return
  if generation!=screen_generation or request!=focus_request:return
  if page!="quiz" or submitted or question!=question_id or answers[question]!=value:return
  var target=find_child("Option%d"%value,true,false) as Control
  if is_instance_valid(target) and target.is_inside_tree() and not target.is_queued_for_deletion():
+  var question_scroll=find_child("QuestionScroll",true,false) as ScrollContainer
+  if question_scroll and not keyboard_navigation:question_scroll.scroll_vertical=scroll_position
   target.grab_focus()
+
+func _input(event:InputEvent)->void:
+ if event is InputEventKey and event.pressed:keyboard_navigation=true
+ elif event is InputEventMouseButton or event is InputEventScreenTouch:keyboard_navigation=false
+ else:return
+ # Touching a card must not pull the scroll position toward keyboard focus.
+ # Keyboard Tab/arrow navigation still scrolls focused controls into view.
+ for node in find_children("*","ScrollContainer",true,false):node.follow_focus=keyboard_navigation
 
 func _resized() -> void:
  if not resize_pending:
@@ -142,9 +153,7 @@ func _deferred_resize() -> void:
  if not is_inside_tree():return
  if page=="result" and is_instance_valid(canvas) and canvas.is_inside_tree():
   # Preserve the live ritual, audio clock and modal; only layout changes.
-  var zoom=minf(size.x/1600.0,size.y/900.0)
-  canvas.scale=Vector2.ONE*zoom
-  canvas.position=(size-canvas.size*zoom)/2
+  layout_result()
   if dialog_question>=0:ResultPages.layout_detail(self)
   return
  var was_dialog=dialog_question
@@ -152,6 +161,11 @@ func _deferred_resize() -> void:
  render()
  if was_dialog>=0: open_detail(was_dialog)
  rebuilding=false
+
+func layout_result()->void:
+ var zoom=minf(size.x/1600.0,size.y/900.0)
+ canvas.scale=Vector2.ONE*zoom
+ canvas.position=(size-canvas.size*zoom)/2
 
 func clear_screen() -> void:
  screen_generation+=1

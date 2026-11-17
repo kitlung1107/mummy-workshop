@@ -57,13 +57,16 @@ func run()->void:
  click("AcceptMission");await settle()
  check(game.page=="quiz","mission mouse works after 500 ms")
  check(sound.stats.last_effect=="mission","accepted mission retains audio cue")
- # Compact layout and keyboard share the same authoritative gate.
+ # Portrait blocks interaction; landscape keyboard shares the mission gate.
  root.size=Vector2i(390,844);game.new_attempt();game.render();await settle()
  game.find_child("AcceptMission",true,false).grab_focus();key(KEY_ENTER)
  check(game.page=="instructions","compact keyboard is blocked before deadline")
  while Time.get_ticks_msec()<game.mission_ready_at+10:await process_frame
  key(KEY_ENTER);await settle()
- check(game.page=="quiz","compact keyboard accepts after deadline")
+ check(game.page=="instructions" and app.orientation.visible,"portrait remains blocked after deadline")
+ root.size=Vector2i(844,390);await settle()
+ game.find_child("AcceptMission",true,false).grab_focus();key(KEY_ENTER);await settle()
+ check(game.page=="quiz" and not app.orientation.visible,"landscape keyboard accepts after rotation and deadline")
  root.size=Vector2i(1600,900);await settle()
  for i in range(61):
   game.find_child("Option%d"%(i%3),true,false).pressed.emit()
@@ -111,8 +114,10 @@ func run()->void:
  check((game.canvas.position+game.canvas.size*game.canvas.scale/2).distance_to(game.size/2)<1,"container-only resize updates game layout")
  check(game.ritual==ritual and notices[0]==1,"container-only resize preserves completed reveal")
  toolbar.custom_minimum_size.y=54;await settle()
- # All fifteen explanations at six aspect ratios, plus actual closing inputs.
- for viewport_size in sizes:
+ # Actual modal interactions are available in landscape; portrait rotation is
+ # covered above and by test_option_redraw_review's progress/modal checks.
+ var modal_sizes=[Vector2i(1600,900),Vector2i(1366,768),Vector2i(1920,1080),Vector2i(844,390)]
+ for viewport_size in modal_sizes:
   root.size=viewport_size;await settle()
   for n in range(15):
    var q=int(n/3);game.answers[q]=n%3
@@ -121,7 +126,7 @@ func run()->void:
    check(game.dialog_question==q,"explanation opens %d at %s"%[n,viewport_size])
    var frame=game.dialog_layer.get_node("DetailPanel") as Control
    var art=frame.get_node("ExplanationArtwork") as Control
-   check(art.get_global_rect().get_center().distance_to(game.get_global_rect().get_center())<1,"panel centered in game area %d at %s"%[n,viewport_size])
+   check(frame.get_global_rect().get_center().distance_to(game.get_global_rect().get_center())<1,"panel centered in game area %d at %s"%[n,viewport_size])
    check(Rect2(Vector2.ZERO,Vector2(root.size)).encloses(art.get_global_rect()),"panel fits viewport")
    check(art.get_meta("option_id")==n%3 and art.get_meta("question_id")==q,"exact explanation mapping")
    check(game.find_child("ReturnMummy",true,false)==null,"no obsolete return control")
@@ -133,7 +138,8 @@ func run()->void:
    check(sound.ducked,"modal retains audio ducking")
    var hint=frame.get_node("CloseHint") as Control
    check(not hint.get_global_rect().intersects(art.get_global_rect()),"close hint does not overlap art")
-   check(Rect2(Vector2.ZERO,Vector2(root.size)).encloses(hint.get_global_rect()),"close hint stays on screen")
+   check(hint.visible==(game.size.y>=550),"close hint is hidden in compact landscape")
+   check(not hint.visible or Rect2(Vector2.ZERO,Vector2(root.size)).encloses(hint.get_global_rect()),"visible close hint stays on screen")
    check(game.detail_textures.size()<=game.DETAIL_CACHE_LIMIT,"texture cache bounded")
    if viewport_size==sizes[0]:await shot("dialog-%02d"%(n+1))
    elif n==14:await shot("dialog-15-%dx%d"%[viewport_size.x,viewport_size.y])
@@ -174,7 +180,7 @@ func run()->void:
  game.page="quiz";game.render();game.find_child("Option2",true,false).pressed.emit()
  game.get_parent().remove_child(game);game.queue_free();await settle()
  app.queue_free();await settle()
- var report={"checks":checks,"failures":failures,"resize_events":resize_count,"explanations":15,"viewport_sizes":sizes.map(func(s):return str(s)),"modal_cases":90,"cache_limit":5,"gpu_captures":captures,"audio_shell":true,"audio_stats":sound.stats,"engine":Engine.get_version_info().string}
+ var report={"checks":checks,"failures":failures,"resize_events":resize_count,"explanations":15,"viewport_sizes":modal_sizes.map(func(s):return str(s)),"rotation_sizes":sizes.map(func(s):return str(s)),"modal_cases":15*modal_sizes.size(),"cache_limit":5,"gpu_captures":captures,"audio_shell":true,"audio_stats":sound.stats,"engine":Engine.get_version_info().string}
  FileAccess.open("res://review/ui-lifecycle/report.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "))
  print(JSON.stringify(report))
  # Let the audio mixer release active WAV playbacks before test shutdown.
