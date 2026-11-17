@@ -13,7 +13,7 @@ var orders: Array = []
 var page = "home"
 var question = 0
 var submitted = false
-var completion_records: Array = [] # session memory only; no persistence or backend
+var completion_records: Array = [] # Local UI history; Web completions also enter the authenticated host queue.
 var root_box: VBoxContainer
 var scroll: ScrollContainer
 var stage: Control
@@ -264,6 +264,9 @@ func next_question() -> void:
 
 func submit() -> bool:
  if submitted or not Data.valid(answers):return false
+ if OS.has_feature("web"):
+  var accepted=JavaScriptBridge.eval("window.HistoryMummy && window.HistoryMummy.complete("+JSON.stringify(answers)+")",true)
+  if accepted != true:return false
  submitted=true
  completion_records.append(Data.record(answers,Time.get_datetime_string_from_system(true)+"Z"))
  page="result"
