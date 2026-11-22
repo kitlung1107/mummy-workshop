@@ -1,51 +1,138 @@
 extends RefCounted
-## Entry screens are isolated from question/result rendering and answer data.
-const HOME = preload("res://assets/entry/home.png")
-const INSTRUCTIONS = preload("res://assets/entry/instructions-v3.png")
-const INSTRUCTION_COPY = "你是一位古埃及防腐師。\n王室交給你一項重要任務：\n為法魯王製作木乃伊。"
-const OUTCOME_COPY = "每個部分選一種做法。\n完成後，看看你製作的木乃伊會變成甚麼模樣！"
+## The painted room and the controls share a viewport, including on short phones.
+const HOME=preload("res://assets/entry/home-panorama.jpg")
+const INSTRUCTIONS=preload("res://assets/entry/instructions-v3.png")
+const MISSION_ART=preload("res://assets/entry/mission-landscape-redrawn-v1.png")
+const ROOM=preload("res://assets/questions/workshop-background.png")
+const WorkshopSkin=preload("res://scripts/workshop_settings_skin.gd")
+const INSTRUCTION_COPY="你是一位古埃及防腐師。\n王室交給你一項重要任務：為法魯王製作木乃伊。"
+const OUTCOME_COPY="每個部分選一種做法。\n完成後，看看你製作的木乃伊會變成甚麼模樣！"
 
-static func build(game: Control, page: String) -> void:
- var background := ColorRect.new()
- background.color = Color("123e46")
- background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- background.mouse_filter = Control.MOUSE_FILTER_IGNORE
- game.add_child(background)
- if page == "instructions" and game.size.y < 550:
-  _landscape_instructions(game)
- else:
-  _illustrated(game, page)
-
-static func _illustrated(game: Control, page: String) -> void:
- var texture: Texture2D = HOME if page == "home" else INSTRUCTIONS
- var natural := texture.get_size()
- var factor: float = minf(game.size.x / natural.x, game.size.y / natural.y)
- var frame := Control.new()
- frame.name = "EntryArtwork"
- frame.size = natural * factor
- frame.position = (game.size - frame.size) / 2
- game.add_child(frame)
- var art := TextureRect.new()
- art.texture = texture
+static func build(game:Control,page:String)->void:
  if page=="home":
-  var local_edit=ShaderMaterial.new()
-  local_edit.shader=preload("res://scripts/local_art_edit.gdshader")
-  local_edit.set_shader_parameter("edited_art",preload("res://assets/entry/home-covered-v3.png"))
-  art.material=local_edit
- art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
- art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- art.mouse_filter = Control.MOUSE_FILTER_IGNORE
- frame.add_child(art)
- if page == "home":
-  _hotspot(frame, "StartGame", "", Rect2(0.263,0.816,0.473,0.144),
-   func(): game.start_game())
+  _home(game)
+ elif game.size.x<game.size.y:
+  _compact_instructions(game)
  else:
-  _hotspot(frame, "AcceptMission", "", Rect2(0.326,0.86,0.422,0.121),
-   func(): game.accept_mission())
-  _hotspot(frame, "BackHome", "返回首頁", Rect2(0.018,0.018,0.072,0.084),
-   func(): game.entry_home())
+  _mission(game)
 
-static func _hotspot(frame: Control, id: String, caption: String, region: Rect2, action: Callable) -> void:
+static func _home(game:Control)->void:
+ var natural:=HOME.get_size()
+ var zoom:=maxf(game.size.x/natural.x,game.size.y/natural.y)
+ var frame:=Control.new()
+ frame.name="EntryArtwork"
+ frame.size=natural*zoom
+ frame.position=(game.size-frame.size)/2
+ game.add_child(frame)
+ var art:=TextureRect.new()
+ art.texture=HOME
+ art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+ art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ frame.add_child(art)
+ if game.has_meta("home_pointer"):game.remove_meta("home_pointer")
+ var start:=_hotspot(frame,"StartGame","開始遊戲",Rect2(.378,.793,.246,.153),func():game.start_game())
+ _remember_pointer(start,game,"home_pointer")
+
+static func _mission(game:Control)->void:
+ # Use the workshop's painted wall and writing surface as a single full-bleed
+ # background. Place all readable copy, seals and controls in viewport space.
+ var source:=AtlasTexture.new()
+ var original:=ROOM.get_size()
+ source.atlas=ROOM
+ source.region=Rect2(0,original.y*.111,original.x,original.y*.889)
+ var room:=TextureRect.new()
+ room.name="MissionRoom"
+ room.texture=source
+ room.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+ room.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ var zoom:=maxf(game.size.x/source.get_width(),game.size.y/source.get_height())
+ room.size=source.get_size()*zoom
+ room.position=(game.size-room.size)/2
+ game.add_child(room)
+ var h:=game.size.y
+ var w:=game.size.x
+ var left:=clampf(room.position.x+room.size.x*.354,w*.28,w*.48)
+ var right:=minf(w-20,room.position.x+room.size.x*.971)
+ var width:=right-left
+ var unit:=clampf(minf(w/1040,h/560),.67,1.65)
+ var ink:=Color("55371c")
+ var title:Label=game.label("你的任務",roundi(35*unit),ink)
+ _place(title,game,Rect2(left,h*.058,width,h*.103))
+ var copy:Label=game.label(INSTRUCTION_COPY,roundi(21*unit),ink)
+ _place(copy,game,Rect2(left,h*.167,width,h*.154))
+ var slot:=width/5
+ var diameter:=minf(slot*.83,h*.225)
+ var centers=[.410,.525,.640,.755,.870]
+ var names=["腦部","內臟","脫水","包裹","安葬"]
+ for i in range(5):
+  var coin:=TextureRect.new()
+  coin.name="MissionSeal%d"%i
+  coin.texture=_seal(centers[i])
+  coin.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+  coin.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+  coin.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  var pos:=Vector2(left+slot*(i+.5)-diameter/2,h*.33)
+  coin.position=pos
+  coin.size=Vector2.ONE*diameter
+  # Discard the square atlas corners so the seals sit directly on the paper.
+  var mask:=ShaderMaterial.new()
+  mask.shader=preload("res://scripts/mission_seal.gdshader")
+  mask.set_shader_parameter("diameter",diameter)
+  coin.material=mask
+  game.add_child(coin)
+  var caption:Label=game.label("%02d  %s"%[i+1,names[i]],roundi(17*unit),ink)
+  _place(caption,game,Rect2(left+slot*i,pos.y+diameter+2,slot,h*.063))
+ var outcome:Label=game.label(OUTCOME_COPY,roundi(20*unit),ink)
+ _place(outcome,game,Rect2(left,h*.64,width,h*.127))
+ var actions:=HBoxContainer.new()
+ actions.position=Vector2(left,h*.805)
+ actions.size=Vector2(width,maxf(44,h*.126))
+ actions.add_theme_constant_override("separation",roundi(10*unit))
+ game.add_child(actions)
+ for i in range(2):
+  var control:=Button.new()
+  control.name="BackHome" if i==0 else "AcceptMission"
+  control.text="返回首頁" if i==0 else "接受任務"
+  control.accessibility_name=control.text
+  control.custom_minimum_size.y=44
+  control.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  control.size_flags_stretch_ratio=1.0 if i==0 else 1.4
+  WorkshopSkin.button(control,WorkshopSkin.STONE if i==0 else WorkshopSkin.JADE,null if i==0 else WorkshopSkin.PLAY,roundi(22*unit))
+  if i==0:
+   _remember_pointer(control,control,"back_pointer")
+   control.pressed.connect(func():
+    # A rapid second tap on Start may land on the newly reflowed Back control.
+    if Time.get_ticks_msec()<game.mission_ready_at and game.has_meta("home_pointer") and control.has_meta("back_pointer"):
+     var first:Vector2=game.get_meta("home_pointer")
+     if first.distance_to(control.get_meta("back_pointer"))<16:return
+    game.entry_home())
+  else:control.pressed.connect(func():game.accept_mission())
+  actions.add_child(control)
+
+static func _seal(center:float)->AtlasTexture:
+ var seal:=AtlasTexture.new()
+ seal.atlas=MISSION_ART
+ var source:=MISSION_ART.get_size()
+ var extent:=source.x*.096
+ seal.region=Rect2(source.x*center-extent/2,source.y*.435-extent/2,extent,extent)
+ return seal
+
+static func _place(label:Label,game:Control,rect:Rect2)->void:
+ label.position=rect.position
+ label.size=rect.size
+ label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ game.add_child(label)
+
+static func _remember_pointer(control:Button,owner:Control,key:String)->void:
+ control.gui_input.connect(func(event:InputEvent):
+  if (event is InputEventMouseButton or event is InputEventScreenTouch) and event.pressed:
+   owner.set_meta(key,control.get_global_transform_with_canvas()*event.position)
+  elif event is InputEventKey and event.pressed and owner.has_meta(key):
+   owner.remove_meta(key))
+
+static func _hotspot(frame: Control, id: String, caption: String, region: Rect2, action: Callable) -> Button:
  var control := Button.new()
  control.name = id
  control.accessibility_name = caption if not caption.is_empty() else ("開始遊戲" if id=="StartGame" else "接受任務")
@@ -69,6 +156,7 @@ static func _hotspot(frame: Control, id: String, caption: String, region: Rect2,
   control.add_theme_stylebox_override(state,style)
  control.pressed.connect(action)
  frame.add_child(control)
+ return control
 
 static func _compact_instructions(game: Control) -> void:
  var backdrop := TextureRect.new()
@@ -133,49 +221,3 @@ static func _compact_instructions(game: Control) -> void:
  game.add_child(accept)
  accept.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
  accept.offset_left=18;accept.offset_right=-18;accept.offset_top=-64;accept.offset_bottom=-10
-
-static func _landscape_instructions(game:Control)->void:
- # Newly painted complete landscape composition. No atlas crops or UI collage.
- var w=game.size.x
- var h=game.size.y
- var background=TextureRect.new()
- background.name="RedrawnMissionArtwork"
- background.texture=preload("res://assets/entry/mission-landscape-redrawn-v1.png")
- background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
- background.stretch_mode=TextureRect.STRETCH_SCALE
- background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- background.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.add_child(background)
- var x=w*.30
- var width=w*.69
- var title=game.label("你的任務",23,Color("68411e"))
- title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- title.position=Vector2(x+20,h*.06);title.size=Vector2(width-40,30);game.add_child(title)
- var copy=game.label("你是一位古埃及防腐師。\n王室交給你一項重要任務：為法魯王製作木乃伊。",18,Color("3e2b1b"))
- copy.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- copy.position=Vector2(x+26,h*.16);copy.size=Vector2(width-52,60);game.add_child(copy)
- # Five new pictograms are painted into the new scene. Live labels stay crisp.
- var centers=[.410,.525,.640,.755,.870]
- var labels=["腦部","內臟","脫水","包裹","安葬"]
- for i in range(5):
-  var label=game.label("%02d  %s"%[i+1,labels[i]],15,Color("51371f"))
-  label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-  label.position=Vector2(w*centers[i]-w*.052,h*.57);label.size=Vector2(w*.104,24);game.add_child(label)
- var outcome=game.label("每個部分選一種做法。\n完成後，看看你製作的木乃伊會變成甚麼模樣！",16,Color("51371f"))
- outcome.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- outcome.position=Vector2(x+22,h*.65);outcome.size=Vector2(width-44,52);game.add_child(outcome)
- # Transparent native controls align with the two newly painted buttons.
- for i in range(2):
-  var b=Button.new();b.name="BackHome" if i==0 else "AcceptMission"
-  b.text="返回首頁" if i==0 else "接受任務  ›"
-  b.accessibility_name=b.text;b.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
-  b.position=Vector2(w*(.326 if i==0 else .562),h*.805)
-  b.size=Vector2(w*(.222 if i==0 else .393),h*.139)
-  b.custom_minimum_size.y=44
-  b.add_theme_font_size_override("font_size",17 if i==0 else 20)
-  for state in ["normal","hover","pressed"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
-  for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:b.add_theme_color_override(state,Color("fff0bd"))
-  var focus=StyleBoxFlat.new();focus.bg_color=Color.TRANSPARENT;focus.border_color=Color("fff1bd");focus.set_border_width_all(2);focus.set_corner_radius_all(20)
-  b.add_theme_stylebox_override("focus",focus)
-  if i==0:b.pressed.connect(func():game.entry_home())
-  else:b.pressed.connect(func():game.accept_mission())
-  game.add_child(b)

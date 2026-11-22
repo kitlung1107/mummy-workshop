@@ -26,20 +26,10 @@ func run()->void:
  game=load("res://main.tscn").instantiate();root.add_child(game);await settle()
  var art=game.find_child("EntryArtwork",true,false).get_child(0)
  await shot("fix-v3/home")
- var edited=root.get_texture().get_image()
- var material=art.material;art.material=null;await settle();await RenderingServer.frame_post_draw
- var original=root.get_texture().get_image()
- var rect=art.get_global_rect();var patch=Rect2(Vector2(894,450),Vector2(128,71))
- var changed_inside=0;var changed_outside=0
- for y in range(900):
-  for x in range(1600):
-   if edited.get_pixel(x,y)!=original.get_pixel(x,y):
-    var local=(Vector2(x+.5,y+.5)-rect.position)/rect.size*Vector2(1453,1083)
-    if patch.grow(2).has_point(local):changed_inside+=1
-    else:changed_outside+=1
- check(changed_inside>100,"generated cloth patch is visible")
- check(changed_outside==0,"home pixels unchanged outside local cloth patch")
- art.material=material
+ var rect:Rect2=art.get_global_rect()
+ check(rect.encloses(Rect2(Vector2.ZERO,game.size)),"panoramic home artwork fills the viewport")
+ check(is_equal_approx(rect.size.aspect(),art.texture.get_size().aspect()),"home illustration keeps its proportions")
+ check(Rect2(Vector2.ZERO,game.size).encloses(game.find_child("StartGame",true,false).get_global_rect()),"start control remains visible")
  await hover(game.find_child("StartGame",true,false))
  await click(game.find_child("StartGame",true,false));await shot("fix-v3/instructions")
  await hover(game.find_child("AcceptMission",true,false));await click(game.find_child("AcceptMission",true,false))
@@ -73,6 +63,6 @@ func run()->void:
  await key(KEY_ENTER);check(game.dialog_question==-1,"keyboard activation closes")
  game.open_detail(0);await settle();await key(KEY_ESCAPE);check(game.dialog_question==-1,"Escape closes")
  await click(game.find_child("ResultHome",true,false));check(game.page=="home","return home navigation")
- var report={"checks":checks,"failures":failures,"home_changed_inside":changed_inside,"home_changed_outside":changed_outside,"hovered_question_choices":15,"hovered_result_dialogs":15,"keyboard_navigation_tested":true}
+ var report={"checks":checks,"failures":failures,"panoramic_home":true,"hovered_question_choices":15,"hovered_result_dialogs":15,"keyboard_navigation_tested":true}
  var file=FileAccess.open("res://review/fix-v3/test-report.json",FileAccess.WRITE);file.store_string(JSON.stringify(report,"  "));file.close()
  print(JSON.stringify(report));quit(0 if failures.is_empty() else 1)

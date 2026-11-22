@@ -36,7 +36,7 @@ func run()->void:
  game=app.game
  var sound=root.get_node("GameAudio")
  sound.set_enabled(true)
- check(game.position.y>=54,"actual audio shell reserves toolbar above game")
+ check(game.get_rect()==Rect2(Vector2.ZERO,app.size),"game fills the shell behind settings")
  # Same screen point: the second click is the accidental overlapping mission click.
  var start=game.find_child("StartGame",true,false).get_global_rect().get_center()
  click_at(start)
@@ -109,11 +109,10 @@ func run()->void:
  for viewport_size in sizes:
   root.size=viewport_size;await settle()
  check(notices[0]==1,"post-reveal resize emits no extra completion")
- var toolbar=app.find_child("AudioToolbar",true,false)
- toolbar.custom_minimum_size.y=96;await settle()
+ game.offset_top=96;await settle()
  check((game.canvas.position+game.canvas.size*game.canvas.scale/2).distance_to(game.size/2)<1,"container-only resize updates game layout")
  check(game.ritual==ritual and notices[0]==1,"container-only resize preserves completed reveal")
- toolbar.custom_minimum_size.y=54;await settle()
+ game.offset_top=0;await settle()
  # Actual modal interactions are available in landscape; portrait rotation is
  # covered above and by test_option_redraw_review's progress/modal checks.
  var modal_sizes=[Vector2i(1600,900),Vector2i(1366,768),Vector2i(1920,1080),Vector2i(844,390)]

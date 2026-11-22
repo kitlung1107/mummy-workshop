@@ -17,7 +17,7 @@ func click(id: String) -> void:
  check(control!=null,"button exists: "+id)
  if control==null:return
  var scroller=game.find_child("EntryScroll",true,false)
- if scroller:
+ if scroller and scroller.is_ancestor_of(control):
   scroller.ensure_control_visible(control)
   await settle()
  var point=control.get_global_rect().get_center()
@@ -93,7 +93,7 @@ func run() -> void:
   game.choose(0);game.next_question()
  check(game.page=="result" and game.completion_records.size()==1,"five questions reach one result")
  check(not game.submit(),"duplicate submission rejected")
- var report={"checks":checks,"failures":failures,"sizes":sizes.map(func(s):return str(s)),"input":"Godot GUI mouse events and keyboard Enter","corrected_asset_sha256":"8CB347A58B946E2ADEA9EC83BFC49830CA0110EDFD3D0E608BCCD803259E3FC8"}
+ var report={"checks":checks,"failures":failures,"sizes":sizes.map(func(s):return str(s)),"input":"Godot GUI mouse events and keyboard Enter","home_art_sha256":FileAccess.get_sha256("res://assets/entry/home-panorama.jpg")}
  var file=FileAccess.open("res://review/entry-test-report.json",FileAccess.WRITE)
  file.store_string(JSON.stringify(report,"  "))
  print(JSON.stringify(report))

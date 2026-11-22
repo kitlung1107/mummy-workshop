@@ -35,10 +35,10 @@ func run():
   await click(game.find_child("StartGame",true,false));check(game.page=="instructions","start mission "+str(sz))
   for id in ["AcceptMission","BackHome"]:contained(game.find_child(id,true,false),id)
   await shot(str(sz.x)+"-mission");await create_timer(.52).timeout
-  if sz.x==844:
-   var artwork=game.find_child("RedrawnMissionArtwork",true,false)
-   check(artwork!=null and artwork.texture.get_size()==Vector2(1954,805),"new HD mission painting")
-   check(artwork.stretch_mode==TextureRect.STRETCH_SCALE,"whole painting displayed without cropping")
+  var artwork=game.find_child("MissionRoom",true,false)
+  check(artwork.get_global_rect().grow(.1).encloses(Rect2(Vector2.ZERO,game.size)),"mission background fills viewport")
+  check(is_equal_approx(artwork.size.aspect(),artwork.texture.get_size().aspect()),"mission art maintains proportions")
+  for part in range(5):contained(game.find_child("MissionSeal%d"%part,true,false),"mission seal")
   await click(game.find_child("AcceptMission",true,false));check(game.page=="quiz","accept mission")
   for q in range(5):
    for value in range(3):

@@ -9,7 +9,7 @@
   function post(data){if(embedded)parent.postMessage({protocol:'history-game/1',channel,gameId:config.gameId,version:config.version,...data},host.origin);}
   function storageKey(){return 'hq-mummy-pending-v1:'+config.version+':'+identity.scope;}
   function save(){localStorage.setItem(storageKey(),JSON.stringify([...pending.values()]));}
-  window.HistoryMummy={ready,complete(answers){
+  window.HistoryMummy={ready,returnToView(){post({type:'return-to-view'});},complete(answers){
     if(!ready()||!Array.isArray(answers)||answers.length!==5||!answers.every(n=>Number.isInteger(n)&&n>=0&&n<=2))return false;
     const id=crypto.randomUUID(),e={protocol:'mummy-game/1',type:'complete',eventId:id,sessionId:crypto.randomUUID(),sequence:1,answers:[...answers],playedAt:new Date().toISOString()};
     pending.set(id,e);
