@@ -266,7 +266,12 @@ func submit() -> bool:
  if submitted or not Data.valid(answers):return false
  if OS.has_feature("web"):
   var accepted=JavaScriptBridge.eval("window.HistoryMummy && window.HistoryMummy.complete("+JSON.stringify(answers)+")",true)
-  if accepted != true:return false
+  # Godot Web can return JS booleans as integers (1/0).
+  if not accepted:
+   var reveal_button=find_child("NextButton",true,false) as Button
+   if reveal_button:
+    reveal_button.text="未能提交，按此重試"
+   return false
  submitted=true
  completion_records.append(Data.record(answers,Time.get_datetime_string_from_system(true)+"Z"))
  page="result"
