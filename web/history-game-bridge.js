@@ -35,6 +35,10 @@
     if(gate){gate.hidden=ready();if(!ready())gate.textContent='請經歷史探索館登入，確認身份後開始遊戲。';}
   }
   addEventListener('DOMContentLoaded',()=>{
+    // A completed touch activates the iframe so the next physical key reaches Godot.
+    document.addEventListener('touchend',event=>{
+      if(event.target.id==='canvas')event.target.focus({preventScroll:true});
+    },{capture:true,passive:true});
     gate=document.createElement('div');gate.id='museum-login-gate';gate.setAttribute('role','status');
     gate.style.cssText='position:fixed;inset:0;z-index:9999;background:#103e49;color:#fff0ce;display:grid;place-items:center;text-align:center;padding:2rem;font:20px sans-serif';
     const style=document.createElement('style');style.textContent='#museum-login-gate[hidden]{display:none!important}';document.head.append(style);document.body.append(gate);tick();

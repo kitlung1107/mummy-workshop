@@ -1,11 +1,18 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),{webcrypto}=require('node:crypto');
 function setup(saved=new Map()){
- const listeners={},sent=[],parent={postMessage:(data,origin)=>sent.push({data,origin})},host='https://kitlung1107.github.io';let reloaded=false,storageFail=false;
- const c={console,crypto:webcrypto,URL,URLSearchParams,Map,Date,JSON,setInterval:()=>{},addEventListener:(type,fn)=>listeners[type]=fn,localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>{if(storageFail)throw Error('quota');saved.set(k,v);}},location:{search:'?hqChannel=abc',replace:()=>{},reload:()=>{reloaded=true;}},parent,document:{documentElement:{dataset:{}},head:{append:()=>{}},body:{append:()=>{}},createElement:()=>({style:{},setAttribute:()=>{}})}};
+ const listeners={},documentListeners={},sent=[],parent={postMessage:(data,origin)=>sent.push({data,origin})},host='https://kitlung1107.github.io';let reloaded=false,storageFail=false;
+ const c={console,crypto:webcrypto,URL,URLSearchParams,Map,Date,JSON,setInterval:()=>{},addEventListener:(type,fn)=>listeners[type]=fn,localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>{if(storageFail)throw Error('quota');saved.set(k,v);}},location:{search:'?hqChannel=abc',replace:()=>{},reload:()=>{reloaded=true;}},parent,document:{addEventListener:(type,fn)=>documentListeners[type]=fn,documentElement:{dataset:{}},head:{append:()=>{}},body:{append:()=>{}},createElement:()=>({style:{},setAttribute:()=>{}})}};
  c.window=c;c.HISTORY_GAME_CONFIG={gameId:'mummy-workshop',version:'test',host:host+'/history-quest/',rulesProtocol:'mummy-game/1'};vm.createContext(c);vm.runInContext(fs.readFileSync('web/history-game-bridge.js','utf8'),c);
  const receive=(data,origin=host,source=parent)=>listeners.message({data:{protocol:'history-game/1',channel:'abc',...data},origin,source});
- return{c,receive,sent,saved,failStorage:()=>storageFail=true,reloaded:()=>reloaded};
+ return{c,receive,sent,saved,listeners,documentListeners,failStorage:()=>storageFail=true,reloaded:()=>reloaded};
 }
+const focusFixture=setup();
+focusFixture.listeners.DOMContentLoaded();
+let canvasFocusCalls=0;
+const canvas={id:'canvas',focus:options=>{assert.equal(options.preventScroll,true);canvasFocusCalls++;}};
+focusFixture.documentListeners.touchend({target:{id:'museum-login-gate'}});
+focusFixture.documentListeners.touchend({target:canvas});
+assert.equal(canvasFocusCalls,1);
 let s=setup();assert.equal(s.c.HistoryMummy.complete([0,0,0,0,0]),false);
 s.receive({type:'identity',identity:{scope:'u:s',rulesProtocol:'mummy-game/1'}},'https://evil.example');assert.equal(s.c.HistoryMummy.ready(),false);
 s.receive({type:'identity',identity:{scope:'u:s',rulesProtocol:'mummy-game/1'}});assert.equal(s.c.HistoryMummy.ready(),true);
