@@ -185,17 +185,64 @@ static func _landscape(game:Control)->void:
  var card_w=(w-pad*2-20)/3
  for i in range(3):
   var value:int=game.orders[game.question][i]
-  var card=_complete_landscape_card(game,value,Vector2(card_w,card_h))
-  _place(card,game,Vector2(pad+i*(card_w+10),card_y),Vector2(card_w,card_h))
+  _complete_landscape_card(game,value,Rect2(pad+i*(card_w+10),card_y,card_w,card_h))
  var nav=HBoxContainer.new();nav.add_theme_constant_override("separation",14)
  _place(nav,game,Vector2(pad,h-50),Vector2(w-24,46));_navigation(game,nav,true)
  for b in nav.get_children():
   b.custom_minimum_size.y=44;ui.button(b,17)
 
-static func _complete_landscape_card(game:Control,value:int,dimensions:Vector2)->Button:
+# The second phrase starts here when the full caption cannot fit on one line.
+# Keys follow the stable answer IDs, independent of shuffled display order.
+const CAPTION_SECOND_PHRASE = [
+ ["取出腦部", "並塗香油", "取出腦部"],
+ ["心臟留在體內", "胃、腸和心臟", "留在體內"],
+ ["約 40 日", "約 40 日", "約 40 日"],
+ ["塗樹脂和油", "亞麻布", "用紙草包裹"],
+ ["並放入棺木", "但放在棺旁", "但不戴面具"]
+]
+
+static func _fit_landscape_caption(label:Label,area:Rect2,second_phrase:String)->void:
+ var caption=label.text
+ var font=label.get_theme_font("font")
+ label.position=area.position
+ label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ label.autowrap_mode=TextServer.AUTOWRAP_OFF
+ # The CJK font includes leading above and below each line.
+ const LINE_SPACING = -5
+ label.add_theme_constant_override("line_spacing",LINE_SPACING)
+ for point_size in range(16,13,-1):
+  if font.get_string_size(caption,HORIZONTAL_ALIGNMENT_LEFT,-1,point_size).x<=area.size.x:
+   label.add_theme_font_size_override("font_size",point_size)
+   label.size=area.size
+   return
+ var split_at=caption.find(second_phrase)
+ if split_at>0:
+  label.text=caption.insert(split_at,"\n")
+ var lines=label.text.split("\n")
+ # The lower corners contain painted leaves. Keep the second line inside them.
+ var inner_width=area.size.x*.89
+ if font.get_string_size(lines[-1],HORIZONTAL_ALIGNMENT_LEFT,-1,14).x>inner_width:
+  var compact_font=FontVariation.new()
+  compact_font.base_font=font
+  compact_font.spacing_glyph=-1
+  label.add_theme_font_override("font",compact_font)
+  font=compact_font
+ for point_size in range(16,11,-1):
+  label.add_theme_font_size_override("font_size",point_size)
+  var first_width=font.get_string_size(lines[0],HORIZONTAL_ALIGNMENT_LEFT,-1,point_size).x
+  var last_width=font.get_string_size(lines[-1],HORIZONTAL_ALIGNMENT_LEFT,-1,point_size).x
+  var height=label.get_line_height()*lines.size() + LINE_SPACING*(lines.size()-1)
+  if first_width<=area.size.x and last_width<=inner_width and height<=area.size.y:
+   break
+ label.size=area.size
+
+static func _complete_landscape_card(game:Control,value:int,bounds:Rect2)->void:
+ var dimensions=bounds.size
  var chosen:bool=game.answers[game.question]==value
  var card=Button.new();card.name="Option%d"%value
  card.custom_minimum_size=dimensions;card.mouse_filter=Control.MOUSE_FILTER_PASS
+ _place(card,game,bounds.position,dimensions)
  card.accessibility_name=Data.OPTIONS[game.question][value]
  card.accessibility_description="已選擇" if chosen else "未選擇"
  card.set_meta("option_id",value);card.set_meta("question_id",game.question)
@@ -226,11 +273,11 @@ static func _complete_landscape_card(game:Control,value:int,dimensions:Vector2)-
   picture.mouse_filter=Control.MOUSE_FILTER_IGNORE
   picture.set_meta("option_id",value);picture.set_meta("question_id",game.question);card.add_child(picture)
  var copy=game.label(Data.OPTIONS[game.question][value],16,Color("382e21"));copy.name="OptionText"
- copy.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;copy.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- copy.position=inset+painted_size*Vector2(.18,.73);copy.size=painted_size*Vector2(.64,.21);card.add_child(copy)
+ card.add_child(copy)
+ var caption_area=Rect2(inset+painted_size*Vector2(.08,.71),painted_size*Vector2(.84,.234))
+ _fit_landscape_caption(copy,caption_area,CAPTION_SECOND_PHRASE[game.question][value])
  if chosen:
   var selected=StyleBoxFlat.new();selected.bg_color=Color.TRANSPARENT;selected.border_color=Color("ffd36a")
   selected.set_border_width_all(3);selected.set_corner_radius_all(12)
   var ring=Panel.new();ring.name="SelectedYellowBorder";ring.add_theme_stylebox_override("panel",selected)
   ring.position=inset;ring.size=painted_size;ring.mouse_filter=Control.MOUSE_FILTER_IGNORE;card.add_child(ring)
- return card
