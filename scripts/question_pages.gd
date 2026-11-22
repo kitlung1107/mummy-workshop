@@ -244,7 +244,6 @@ static func _complete_landscape_card(game:Control,value:int,bounds:Rect2)->void:
  card.custom_minimum_size=dimensions;card.mouse_filter=Control.MOUSE_FILTER_PASS
  _place(card,game,bounds.position,dimensions)
  card.accessibility_name=Data.OPTIONS[game.question][value]
- card.accessibility_description="已選擇" if chosen else "未選擇"
  card.set_meta("option_id",value);card.set_meta("question_id",game.question)
  card.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
  card.pressed.connect(func():_choose(game,value))
@@ -259,7 +258,6 @@ static func _complete_landscape_card(game:Control,value:int,bounds:Rect2)->void:
  background.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
  background.position=inset;background.size=painted_size;background.mouse_filter=Control.MOUSE_FILTER_IGNORE
  background.set_meta("whole_card",true);background.set_meta("option_id",value);background.set_meta("question_id",game.question)
- if chosen:background.modulate=Color(1.12,1.06,.74)
  card.add_child(background)
  # The three brain options are complete individual paintings: no atlas or nine-patch.
  # Other questions retain their original complete square illustrations inside a new whole frame.
@@ -276,8 +274,22 @@ static func _complete_landscape_card(game:Control,value:int,bounds:Rect2)->void:
  card.add_child(copy)
  var caption_area=Rect2(inset+painted_size*Vector2(.08,.71),painted_size*Vector2(.84,.234))
  _fit_landscape_caption(copy,caption_area,CAPTION_SECOND_PHRASE[game.question][value])
- if chosen:
-  var selected=StyleBoxFlat.new();selected.bg_color=Color.TRANSPARENT;selected.border_color=Color("ffd36a")
-  selected.set_border_width_all(3);selected.set_corner_radius_all(12)
-  var ring=Panel.new();ring.name="SelectedYellowBorder";ring.add_theme_stylebox_override("panel",selected)
-  ring.position=inset;ring.size=painted_size;ring.mouse_filter=Control.MOUSE_FILTER_IGNORE;card.add_child(ring)
+ var selected=StyleBoxFlat.new();selected.bg_color=Color.TRANSPARENT;selected.border_color=Color("ffd36a")
+ selected.set_border_width_all(3);selected.set_corner_radius_all(12)
+ var ring=Panel.new();ring.name="SelectedYellowBorder";ring.add_theme_stylebox_override("panel",selected)
+ ring.position=inset;ring.size=painted_size;ring.mouse_filter=Control.MOUSE_FILTER_IGNORE;card.add_child(ring)
+ _set_landscape_choice(card,background,chosen)
+
+static func _set_landscape_choice(card:Button,background:TextureRect,chosen:bool)->void:
+ card.accessibility_description="已選擇" if chosen else "未選擇"
+ background.modulate=Color(1.12,1.06,.74) if chosen else Color.WHITE
+ card.get_node("SelectedYellowBorder").visible=chosen
+
+static func update_landscape_selection(game:Control)->void:
+ # Keep the painted controls resident while the browser starts the answer cue.
+ for value in range(3):
+  var card:Button=game.get_node("Option%d"%value)
+  var background:TextureRect=card.get_node("OptionArtwork" if game.question==0 else "CompleteCardBackground")
+  _set_landscape_choice(card,background,game.answers[game.question]==value)
+ var next:=game.find_child("NextButton",true,false) as Button
+ next.disabled=false

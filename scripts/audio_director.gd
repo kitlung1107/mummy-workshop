@@ -113,19 +113,23 @@ func _ensure_music()->void:
  player.stream=streams[current_music];player.stream_paused=false;player.play();music_targets[music_slot]=1.0
  stats.music_starts+=1
 
-func cue(id:String)->void:
+func cue(id:String,answer_feedback:bool=false)->void:
  if not enabled or suspended or revealing or not streams.has(id):return
  var now=Time.get_ticks_msec()
- if now-last_effect_ms<120:return
+ if not answer_feedback and now-last_effect_ms<120:return
  last_effect_ms=now
  effect_targets[effect_slot]=0.0;effect_slot=1-effect_slot
- var player=effect_players[effect_slot];player.stop();effect_gains[effect_slot]=0.0;player.volume_db=-80
+ var player=effect_players[effect_slot];player.stop()
+ # Answer recordings already contain their attack. Start at the requested gain
+ # so the first audible samples do not depend on the next rendered frame.
+ effect_gains[effect_slot]=1.0 if answer_feedback else 0.0
+ player.volume_db=0.0 if answer_feedback else -80.0
  player.stream=streams[id];player.stream_paused=false;player.play();effect_targets[effect_slot]=1.0
  stats.effect_starts+=1;stats.last_effect=id
 
 func choice(question:int,value:int)->void:
  if question<0 or question>=CHOICE_CUES.size() or value<0 or value>2:return
- cue(CHOICE_CUES[question][value])
+ cue(CHOICE_CUES[question][value],true)
 
 func reset_attempt(value:int)->void:
  attempt=value;revealing=false;reveal_done=false;reveal_elapsed=0.0;reveal_player.stop();ducked=false

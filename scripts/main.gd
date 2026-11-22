@@ -133,7 +133,7 @@ func _focus_option(generation: int, request: int, question_id: int, value: int, 
  if is_instance_valid(target) and target.is_inside_tree() and not target.is_queued_for_deletion():
   var question_scroll=find_child("QuestionScroll",true,false) as ScrollContainer
   if question_scroll and not keyboard_navigation:question_scroll.scroll_vertical=scroll_position
-  target.grab_focus()
+  target.grab_focus(not keyboard_navigation)
 
 func _input(event:InputEvent)->void:
  if event is InputEventKey and event.pressed:keyboard_navigation=true
@@ -252,7 +252,10 @@ func choose(value: int) -> void:
  if answers[question]==value:return
  sound.choice(question,value)
  answers[question]=value
- render()
+ if has_node("Option0"):
+  QuestionPages.update_landscape_selection(self)
+ else:
+  render()
 
 func next_question() -> void:
  if page!="quiz" or answers[question]<0:return
