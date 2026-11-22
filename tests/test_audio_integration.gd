@@ -23,7 +23,10 @@ func run()->void:
  check(game.page=="home","game starts on home")
  check(FileAccess.get_sha256("res://assets/audio/metal-tray.wav")=="b3313e90344b41d7782222d66dcf54b3503e121c64fe9fd988425c1242705501","approved v5 tray installed")
  check(is_equal_approx(sound.streams["metal-tray"].get_length(),.42),"short metallic v5 tray duration")
- check(not sound.enabled and sound.stats.music_starts==0,"no autoplay")
+ # Run repeatably after other game tests that may have saved audio preferences.
+ sound.set_enabled(false)
+ sound.set_volume(.4)
+ check(not app.volume_slider.editable,"volume is disabled while muted")
  check(sound.streams.size()==22,"all approved audio streams preloaded")
  for id in ["loop-home","loop-workshop","loop-result"]:
   var stream=sound.streams[id]
@@ -32,8 +35,26 @@ func run()->void:
  check(is_equal_approx(sound.streams["coffin-4600"].get_length(),4.6),"reveal PCM exactly 4.6 seconds")
  check(FileAccess.get_sha256("res://assets/audio/page-turn.wav")=="5af53d60a6e08dddff9f0062db3112b575337ee002dc8ac4e21ffbe6c47d8758","approved page turn unchanged")
  var capture=AudioEffectCapture.new();capture.buffer_length=2;AudioServer.add_bus_effect(0,capture)
- app.toggle.pressed.emit();await settle(.9)
- check(sound.enabled and sound.stats.music_starts==1,"explicit gesture enables home music")
+ app.settings_toggle.pressed.emit();await settle(.9)
+ check(sound.enabled and app.volume_slider.editable and sound.stats.music_starts>=1,"explicit gesture enables sound and volume")
+ check(app.settings.find_children("*","HSlider",true,false).size()==1,"settings has one audio slider")
+ app.volume_slider.value=67
+ var music_bus:=AudioServer.get_bus_index(sound.MUSIC_BUS)
+ var effects_bus:=AudioServer.get_bus_index(sound.SFX_BUS)
+ for bus in [music_bus,effects_bus]:
+  check(is_equal_approx(AudioServer.get_bus_volume_db(bus),linear_to_db(.67*.8)),"shared slider applies mixer gain to bus "+str(bus))
+ app.settings_toggle.pressed.emit()
+ check(not app.volume_slider.editable and is_equal_approx(app.volume_slider.value,67),"muting locks and preserves the slider")
+ check(AudioServer.is_bus_mute(music_bus) and AudioServer.is_bus_mute(effects_bus),"toggle mutes both buses")
+ var restored=sound.get_script().new()
+ restored._load_preferences()
+ check(not restored.enabled and is_equal_approx(restored.volume,.67),"muted level survives preference reload")
+ app.settings_toggle.pressed.emit()
+ restored._load_preferences()
+ check(restored.enabled and is_equal_approx(restored.volume,.67),"unmuting retains and saves the same level")
+ restored.free()
+ check(not AudioServer.is_bus_mute(music_bus) and not AudioServer.is_bus_mute(effects_bus),"unmuting restores both buses")
+ app.volume_slider.value=40
  var audible=capture_peak(capture);check(audible>0.00001,"actual mixer produces nonzero PCM")
  var home_position=sound.music_players[sound.music_slot].get_playback_position()
  game.start_game();await settle(.2)
@@ -47,6 +68,13 @@ func run()->void:
  check(sound.music_players[sound.music_slot].get_playback_position()>home_position,"home loop position advances instead of restarting")
  while Time.get_ticks_msec()<game.mission_ready_at:await process_frame
  game.accept_mission();await settle(.2)
+ app.settings_entry.pressed.emit()
+ app.volume_slider.value=31
+ check(game.page=="quiz" and is_equal_approx(sound.volume,.31),"in-game settings adjusts the same volume")
+ for bus in [music_bus,effects_bus]:
+  check(is_equal_approx(AudioServer.get_bus_volume_db(bus),linear_to_db(.31*.8)),"in-game slider applies to bus "+str(bus))
+ app.volume_slider.value=40
+ app.close_settings.pressed.emit()
  check(game.page=="quiz" and sound.current_music=="loop-workshop","mission switches to workshop")
  check(sound.stats.music_starts==2,"one workshop transition")
  await settle();game.choose(1);await settle()
@@ -66,11 +94,12 @@ func run()->void:
  check(sound.stats.music_starts==2,"all fifteen choices keep continuous workshop music")
  check(sound.streams["coffin-placement"].get_length()>sound.streams["bed-placement"].get_length()+1,"coffin placement is distinctly longer")
  check(sound.streams["fill-linen"].get_length()>1.8 and sound.streams["fill-papyrus"].get_length()>2.1,"fill then wrapping recipes retain full sequence")
- sound.set_music_volume(0);await settle(.2)
+ # Isolate the effects bus for the PCM probe only.
+ AudioServer.set_bus_mute(AudioServer.get_bus_index(sound.MUSIC_BUS),true);await settle(.2)
  for id in ["nasal-metal","anoint-oil","metal-tray","fill-linen","fill-papyrus","bed-placement","coffin-placement"]:
   capture.clear_buffer();sound.cue(id);await settle(.3)
   check(capture_peak(capture)>0.00001,"new cue produces actual PCM with music muted: "+id)
- sound.set_music_volume(.4);await settle()
+ AudioServer.set_bus_mute(AudioServer.get_bus_index(sound.MUSIC_BUS),false);await settle()
  game.answers=[-1,-1,-1,-1,-1]
  for q in range(5):
   game.question=q;game.render();game.choose(q%3);await settle()
@@ -113,9 +142,9 @@ func run()->void:
  check(sound.stats.music_starts==music_starts,"detail open close never restarts result loop")
  capture.clear_buffer();sound.set_enabled(false);await settle(.2);capture.clear_buffer();await settle(.2)
  check(capture_peak(capture)==0,"master mute produces silent PCM")
- sound.set_enabled(true);sound.set_music_volume(0);sound.set_effects_volume(0);await settle(.2);capture.clear_buffer();await settle(.2)
- check(capture_peak(capture)==0,"both volume sliders zero produce silence")
- sound.set_music_volume(.4);sound.set_effects_volume(.45);await settle(.3)
+ sound.set_enabled(true);sound.set_volume(0);await settle(.2);capture.clear_buffer();await settle(.2)
+ check(capture_peak(capture)==0,"zero master volume produces silence")
+ sound.set_volume(.4);await settle(.3)
  check(capture_peak(capture)>0,"volume restoration resumes existing loop")
  var count=game.completion_records.size();game.play_again();await settle()
  check(game.page=="instructions" and game.answers==[-1,-1,-1,-1,-1],"play again resets only attempt")
@@ -127,9 +156,10 @@ func run()->void:
  for dimensions in [Vector2i(1440,810),Vector2i(768,1024),Vector2i(390,844),Vector2i(844,390)]:
   root.size=dimensions;await process_frame;await process_frame;await settle(.1)
   app._layout()
-  check(app.toggle.size.x>=72 and app.toggle.size.y>=44,"usable sound touch target "+str(dimensions))
-  check(game.position.y>=54,"separate audio toolbar preserves game area "+str(dimensions))
-  app.settings.show();await process_frame
+  check(app.settings_toggle.size.x>=72 and app.settings_toggle.size.y>=44,"usable sound touch target "+str(dimensions))
+  check(game.position==Vector2.ZERO and game.size.is_equal_approx(app.size),"game fills shell "+str(dimensions))
+  check(Rect2(Vector2.ZERO,app.size).encloses(app.settings_entry.get_global_rect()),"settings entry fits viewport "+str(dimensions))
+  app.settings_entry.pressed.emit();await process_frame
   var panel=app.settings.get_node("Panel")
   check(panel.position.x>=0 and panel.position.y>=0 and panel.get_rect().end.x<=app.size.x+.1 and panel.get_rect().end.y<=app.size.y+.1,"settings fit viewport "+str(dimensions))
   check(app.close_settings.get_global_rect().end.y<=app.size.y and app.close_settings.size.y>=44,"return button remains visible without scrolling "+str(dimensions))

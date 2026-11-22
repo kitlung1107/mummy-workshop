@@ -127,7 +127,7 @@ static func _wide(game:Control)->void:
  frame.name="QuestionArtwork";frame.size=Vector2(1600,900)
  var factor:float=minf(game.size.x/1600.0,game.size.y/900.0)
  frame.scale=Vector2.ONE*factor;frame.position=(game.size-frame.size*factor)/2;game.add_child(frame)
- var steps=Control.new();_place(steps,frame,Vector2(80,24),Vector2(1440,60));_steps(game,steps)
+ var steps=Control.new();_place(steps,frame,Vector2(80,24),Vector2(minf(1440,(game.size.x-100-frame.position.x)/factor-80),60));_steps(game,steps)
  var heading=game.label(Data.LABELS[game.question],44,PAPER)
  heading.name="QuestionHeading";_place(heading,frame,Vector2(80,112),Vector2(1440,60))
  var prompt=game.label(Data.QUESTIONS[game.question],27,Color("ebdec0"))
@@ -178,7 +178,7 @@ static func _landscape(game:Control)->void:
  heading.name="QuestionHeading";_place(heading,game,Vector2(64,6),Vector2(132,40))
  heading.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
  var prompt=game.label(Data.QUESTIONS[game.question],20,Color("fff1ca"))
- prompt.name="QuestionPrompt";_place(prompt,game,Vector2(216,6),Vector2(w-248,40))
+ prompt.name="QuestionPrompt";_place(prompt,game,Vector2(216,6),Vector2(w-316,40))
  prompt.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
  var card_y=61.0
  var card_h=h-card_y-57

@@ -1,0 +1,9 @@
+{
+  "source": "res://assets/entry/home.png",
+  "output": "res://assets/entry/home-panorama.jpg",
+  "method": "Built-in ImageGen horizontal outpainting of the project home illustration. The approved source PNG remains in the project. The generated panorama was saved as JPEG for the web game.",
+  "width": 1983,
+  "height": 793,
+  "sha256": "861ade4f0189696b6a0018e043c0173c89b3da19908e79aa3e3d45f53b358edf",
+  "prompt": "Outpaint this actual illustrated game home screen sideways into a single continuous very wide 2.5:1 panorama. Keep its existing central 4:3 picture, composition and colors exactly centered at full output height, with central picture width 54% of output. Extend only LEFT and RIGHT, continuing the architecture, warm sandstone worktables, paintings and workshop objects across their existing horizon and tabletop lines. Soft directional morning sun, original polished, richly painted family-friendly Egyptian illustration style. No vertical seams, no decorative frame, no wall borders, no mirrored/repeated tiling, no new people, no extra menus. Preserve every character, mummy modestly wrapped throughout, title 木乃伊工房 and the original working turquoise-and-gold 開始遊戲 cartouche at the exact center bottom. It is crucial that no original subject is pushed towards the outer wings. The outer wings are only environmental scenery. Realistic painted textures, bevel and glints. Output one complete ultrawide game background edge-to-edge, no margins."
+}

@@ -2,6 +2,7 @@ extends Node
 ## Persistent audio + presentation clock. No answer/scoring data is inspected.
 signal settings_changed
 signal suspension_changed(value:bool)
+const PREFERENCES_PATH="user://workshop-audio.cfg"
 const MUSIC_BUS="MW Music"
 const SFX_BUS="MW Effects"
 const REVEAL_LENGTH=4.6
@@ -14,8 +15,7 @@ const CHOICE_CUES=[
 ]
 var enabled=false
 var suspended=false
-var music_volume=0.40
-var effects_volume=0.45
+var volume:float=0.40
 var desired_music=""
 var current_music=""
 var reveal_elapsed=0.0
@@ -37,6 +37,7 @@ var last_effect_ms=-1000
 var stats={"music_starts":0,"reveal_starts":0,"reveal_completions":0,"effect_starts":0,"reveal_audio_starts":0,"last_effect":""}
 
 func _ready()->void:
+ _load_preferences()
  process_mode=Node.PROCESS_MODE_ALWAYS
  for bus_name in [MUSIC_BUS,SFX_BUS]:
   if AudioServer.get_bus_index(bus_name)<0:
@@ -54,26 +55,45 @@ func _ready()->void:
    streams[id]=stream
  _levels()
 
+func _load_preferences()->void:
+ var prefs:=ConfigFile.new()
+ if prefs.load(PREFERENCES_PATH)!=OK:return
+ var saved_enabled=prefs.get_value("audio","enabled",false)
+ var saved_volume=prefs.get_value("audio","volume",volume)
+ if saved_enabled is bool:enabled=saved_enabled
+ if (saved_volume is float or saved_volume is int) and is_finite(float(saved_volume)):
+  volume=clampf(float(saved_volume),0,1)
+
+func _save_preferences()->void:
+ var prefs:=ConfigFile.new()
+ prefs.set_value("audio","enabled",enabled)
+ prefs.set_value("audio","volume",volume)
+ prefs.save(PREFERENCES_PATH)
+
 func _levels()->void:
- AudioServer.set_bus_mute(AudioServer.get_bus_index(MUSIC_BUS),not enabled or music_volume==0.0)
- AudioServer.set_bus_mute(AudioServer.get_bus_index(SFX_BUS),not enabled or effects_volume==0.0)
- AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS),linear_to_db(maxf(0.00001,music_volume*.8*(.7 if ducked else 1.0))))
- AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS),linear_to_db(maxf(0.00001,effects_volume*.8)))
+ AudioServer.set_bus_mute(AudioServer.get_bus_index(MUSIC_BUS),not enabled or volume==0.0)
+ AudioServer.set_bus_mute(AudioServer.get_bus_index(SFX_BUS),not enabled or volume==0.0)
+ AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MUSIC_BUS),linear_to_db(maxf(0.00001,volume*.8*(.7 if ducked else 1.0))))
+ AudioServer.set_bus_volume_db(AudioServer.get_bus_index(SFX_BUS),linear_to_db(maxf(0.00001,volume*.8)))
 
 func set_enabled(value:bool)->void:
+ if enabled==value:return
  enabled=value
  _levels()
+ _save_preferences()
  if enabled and not suspended:
   if revealing and not reveal_player.playing and reveal_elapsed<REVEAL_LENGTH:
    reveal_player.stream=streams["coffin-4600"];reveal_player.play(reveal_elapsed);stats.reveal_audio_starts+=1
   elif not revealing:_ensure_music()
  settings_changed.emit()
 
-func set_music_volume(value:float)->void:
- music_volume=clampf(value,0,1);_levels();settings_changed.emit()
-
-func set_effects_volume(value:float)->void:
- effects_volume=clampf(value,0,1);_levels();settings_changed.emit()
+func set_volume(value:float)->void:
+ var next:=clampf(value,0,1)
+ if is_equal_approx(volume,next):return
+ volume=next
+ _levels()
+ _save_preferences()
+ settings_changed.emit()
 
 func set_ducked(value:bool)->void:
  ducked=value;_levels()
